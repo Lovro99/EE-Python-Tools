@@ -1,0 +1,177 @@
+{
+  "NYY-J 3G": {
+    "naziv": "NYY-J 3G",
+    "opis": "Cu / PVC / PVC, trojžilni, 0.6/1 kV",
+    "presjeci": [
+      {"mm2": 1.5,  "zrak": 15,  "zemlja": 17},
+      {"mm2": 2.5,  "zrak": 21,  "zemlja": 24},
+      {"mm2": 4,    "zrak": 28,  "zemlja": 32},
+      {"mm2": 6,    "zrak": 36,  "zemlja": 41},
+      {"mm2": 10,   "zrak": 50,  "zemlja": 57},
+      {"mm2": 16,   "zrak": 68,  "zemlja": 76},
+      {"mm2": 25,   "zrak": 89,  "zemlja": 99},
+      {"mm2": 35,   "zrak": 110, "zemlja": 121},
+      {"mm2": 50,   "zrak": 134, "zemlja": 147},
+      {"mm2": 70,   "zrak": 171, "zemlja": 188},
+      {"mm2": 95,   "zrak": 207, "zemlja": 227},
+      {"mm2": 120,  "zrak": 239, "zemlja": 263},
+      {"mm2": 150,  "zrak": 271, "zemlja": 298},
+      {"mm2": 185,  "zrak": 310, "zemlja": 341},
+      {"mm2": 240,  "zrak": 362, "zemlja": 398},
+      {"mm2": 300,  "zrak": 415, "zemlja": 456}
+    ]
+  },
+  "NYY-J 2G": {
+    "naziv": "NYY-J 2G",
+    "opis": "Cu / PVC / PVC, dvožilni, 0.6/1 kV",
+    "presjeci": [
+      {"mm2": 1.5,  "zrak": 17,  "zemlja": 19},
+      {"mm2": 2.5,  "zrak": 23,  "zemlja": 26},
+      {"mm2": 4,    "zrak": 31,  "zemlja": 35},
+      {"mm2": 6,    "zrak": 40,  "zemlja": 45},
+      {"mm2": 10,   "zrak": 54,  "zemlja": 62},
+      {"mm2": 16,   "zrak": 73,  "zemlja": 83},
+      {"mm2": 25,   "zrak": 95,  "zemlja": 108},
+      {"mm2": 35,   "zrak": 117, "zemlja": 133},
+      {"mm2": 50,   "zrak": 141, "zemlja": 161},
+      {"mm2": 70,   "zrak": 179, "zemlja": 204},
+      {"mm2": 95,   "zrak": 216, "zemlja": 246},
+      {"mm2": 120,  "zrak": 249, "zemlja": 284},
+      {"mm2": 150,  "zrak": 283, "zemlja": 322},
+      {"mm2": 185,  "zrak": 323, "zemlja": 368},
+      {"mm2": 240,  "zrak": 377, "zemlja": 430}
+    ]
+  },
+  "FG16OR16 3G": {
+    "naziv": "FG16OR16 3G",
+    "opis": "Cu / EPM-guma / PVC, trojžilni, 0.6/1 kV (TimKabel)",
+    "presjeci": [
+      {"mm2": 1.5,  "zrak": 19.5, "zemlja": 19},
+      {"mm2": 2.5,  "zrak": 26,   "zemlja": 25},
+      {"mm2": 4,    "zrak": 35,   "zemlja": 32},
+      {"mm2": 6,    "zrak": 44,   "zemlja": 41},
+      {"mm2": 10,   "zrak": 60,   "zemlja": 55},
+      {"mm2": 16,   "zrak": 80,   "zemlja": 72},
+      {"mm2": 25,   "zrak": 105,  "zemlja": 93},
+      {"mm2": 35,   "zrak": 128,  "zemlja": 114},
+      {"mm2": 50,   "zrak": 154,  "zemlja": 141},
+      {"mm2": 70,   "zrak": 194,  "zemlja": 174},
+      {"mm2": 95,   "zrak": 233,  "zemlja": 206},
+      {"mm2": 120,  "zrak": 268,  "zemlja": 238},
+      {"mm2": 150,  "zrak": 300,  "zemlja": 272},
+      {"mm2": 185,  "zrak": 340,  "zemlja": 306},
+      {"mm2": 240,  "zrak": 398,  "zemlja": 360},
+      {"mm2": 300,  "zrak": 0,    "zemlja": 429}
+    ]
+  },
+  "FG16OR16 2G": {
+    "naziv": "FG16OR16 2G",
+    "opis": "Cu / EPM-guma / PVC, dvožilni, 0.6/1 kV (TimKabel)",
+    "presjeci": [
+      {"mm2": 1.5,  "zrak": 22,  "zemlja": 23},
+      {"mm2": 2.5,  "zrak": 30,  "zemlja": 30},
+      {"mm2": 4,    "zrak": 40,  "zemlja": 39},
+      {"mm2": 6,    "zrak": 51,  "zemlja": 49},
+      {"mm2": 10,   "zrak": 66,  "zemlja": 69},
+      {"mm2": 16,   "zrak": 91,  "zemlja": 86},
+      {"mm2": 25,   "zrak": 119, "zemlja": 111},
+      {"mm2": 35,   "zrak": 146, "zemlja": 136},
+      {"mm2": 50,   "zrak": 175, "zemlja": 168},
+      {"mm2": 70,   "zrak": 221, "zemlja": 207},
+      {"mm2": 95,   "zrak": 265, "zemlja": 245},
+      {"mm2": 120,  "zrak": 305, "zemlja": 284},
+      {"mm2": 150,  "zrak": 0,   "zemlja": 324}
+    ]
+  },
+  "FG16OR16 1x": {
+    "naziv": "FG16OR16 1x",
+    "opis": "Cu / EPM-guma / PVC, jednožilni, 0.6/1 kV (TimKabel)",
+    "presjeci": [
+      {"mm2": 6,    "zrak": 48,  "zemlja": 44},
+      {"mm2": 10,   "zrak": 66,  "zemlja": 59},
+      {"mm2": 16,   "zrak": 88,  "zemlja": 77},
+      {"mm2": 25,   "zrak": 117, "zemlja": 100},
+      {"mm2": 35,   "zrak": 144, "zemlja": 121},
+      {"mm2": 50,   "zrak": 175, "zemlja": 150},
+      {"mm2": 70,   "zrak": 222, "zemlja": 184},
+      {"mm2": 95,   "zrak": 269, "zemlja": 217},
+      {"mm2": 120,  "zrak": 312, "zemlja": 259},
+      {"mm2": 150,  "zrak": 355, "zemlja": 287},
+      {"mm2": 185,  "zrak": 417, "zemlja": 323},
+      {"mm2": 240,  "zrak": 490, "zemlja": 379},
+      {"mm2": 300,  "zrak": 0,   "zemlja": 429},
+      {"mm2": 400,  "zrak": 0,   "zemlja": 541}
+    ]
+  },
+  "FG16OR16 4G": {
+    "naziv": "FG16OR16 4G",
+    "opis": "Cu / EPM-guma / PVC, četveržilni, 0.6/1 kV (TimKabel)",
+    "presjeci": [
+      {"mm2": 1.5,  "zrak": 19.5, "zemlja": 19},
+      {"mm2": 2.5,  "zrak": 26,   "zemlja": 25},
+      {"mm2": 4,    "zrak": 35,   "zemlja": 32},
+      {"mm2": 6,    "zrak": 44,   "zemlja": 41},
+      {"mm2": 10,   "zrak": 60,   "zemlja": 55},
+      {"mm2": 16,   "zrak": 80,   "zemlja": 72},
+      {"mm2": 25,   "zrak": 105,  "zemlja": 93},
+      {"mm2": 35,   "zrak": 130,  "zemlja": 114},
+      {"mm2": 50,   "zrak": 155,  "zemlja": 141},
+      {"mm2": 70,   "zrak": 194,  "zemlja": 174},
+      {"mm2": 95,   "zrak": 235,  "zemlja": 206}
+    ]
+  },
+  "PP41 3G": {
+    "naziv": "PP41 3G",
+    "opis": "Cu / PVC, trojžilni pljosnati, 300/500 V",
+    "presjeci": [
+      {"mm2": 1.5,  "zrak": 13,  "zemlja": 0},
+      {"mm2": 2.5,  "zrak": 18,  "zemlja": 0},
+      {"mm2": 4,    "zrak": 24,  "zemlja": 0},
+      {"mm2": 6,    "zrak": 31,  "zemlja": 0},
+      {"mm2": 10,   "zrak": 42,  "zemlja": 0},
+      {"mm2": 16,   "zrak": 56,  "zemlja": 0}
+    ]
+  },
+  "N2XH 3G": {
+    "naziv": "N2XH 3G",
+    "opis": "Cu / XLPE / LSZH, trojžilni, 0.6/1 kV, bez halogena",
+    "presjeci": [
+      {"mm2": 1.5,  "zrak": 20,  "zemlja": 19},
+      {"mm2": 2.5,  "zrak": 27,  "zemlja": 25},
+      {"mm2": 4,    "zrak": 36,  "zemlja": 34},
+      {"mm2": 6,    "zrak": 46,  "zemlja": 43},
+      {"mm2": 10,   "zrak": 63,  "zemlja": 58},
+      {"mm2": 16,   "zrak": 85,  "zemlja": 78},
+      {"mm2": 25,   "zrak": 112, "zemlja": 102},
+      {"mm2": 35,   "zrak": 138, "zemlja": 125},
+      {"mm2": 50,   "zrak": 167, "zemlja": 151},
+      {"mm2": 70,   "zrak": 213, "zemlja": 192},
+      {"mm2": 95,   "zrak": 258, "zemlja": 232},
+      {"mm2": 120,  "zrak": 299, "zemlja": 269},
+      {"mm2": 150,  "zrak": 341, "zemlja": 306},
+      {"mm2": 185,  "zrak": 390, "zemlja": 350},
+      {"mm2": 240,  "zrak": 455, "zemlja": 409}
+    ]
+  },
+  "NHXMH 3G": {
+    "naziv": "NHXMH 3G",
+    "opis": "Cu / XLPE / PVC, trojžilni, 0.6/1 kV, bez halogena",
+    "presjeci": [
+      {"mm2": 1.5,  "zrak": 19,  "zemlja": 18},
+      {"mm2": 2.5,  "zrak": 26,  "zemlja": 24},
+      {"mm2": 4,    "zrak": 34,  "zemlja": 32},
+      {"mm2": 6,    "zrak": 44,  "zemlja": 41},
+      {"mm2": 10,   "zrak": 60,  "zemlja": 56},
+      {"mm2": 16,   "zrak": 81,  "zemlja": 75},
+      {"mm2": 25,   "zrak": 106, "zemlja": 98},
+      {"mm2": 35,   "zrak": 130, "zemlja": 119},
+      {"mm2": 50,   "zrak": 157, "zemlja": 143},
+      {"mm2": 70,   "zrak": 200, "zemlja": 182},
+      {"mm2": 95,   "zrak": 242, "zemlja": 220},
+      {"mm2": 120,  "zrak": 281, "zemlja": 254},
+      {"mm2": 150,  "zrak": 320, "zemlja": 289},
+      {"mm2": 185,  "zrak": 366, "zemlja": 330},
+      {"mm2": 240,  "zrak": 427, "zemlja": 384}
+    ]
+  }
+}
