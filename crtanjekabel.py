@@ -963,202 +963,176 @@ class KabelskiApp(ctk.CTk):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
+        F_T   = ("Segoe UI", 15, "bold")
+        F_SEC = ("Segoe UI", 10, "bold")
+        F_LBL = ("Segoe UI", 12)
+        F_SM  = ("Segoe UI", 10)
+        C_SEC = "#10202F"   # pozadina sekcije
+        C_HDR = "#6E8CA8"   # boja naslova sekcije
+
         # ── LIJEVI PANEL ────────────────────────────────────────
-        lp = ctk.CTkFrame(self, width=298, corner_radius=0)
+        # Raspored: naslov / postavke (scroll) / akcije / validacija.
+        # Dno je fiksno pa je konzola uvijek vidljiva.
+        lp = ctk.CTkFrame(self, width=300, corner_radius=0, fg_color="#0B1622")
         lp.grid(row=0, column=0, sticky="nsew")
         lp.grid_propagate(False)
         lp.grid_columnconfigure(0, weight=1)
+        lp.grid_rowconfigure(1, weight=1)
 
-        F_LBL  = ("Arial", 12)
-        F_BOLD = ("Arial", 12, "bold")
-        F_SM   = ("Arial", 10)
+        head = ctk.CTkFrame(lp, fg_color="transparent")
+        head.grid(row=0, column=0, sticky="ew", padx=12, pady=(10, 4))
+        head.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(head, text="KABELSKI GRAF", font=F_T).grid(
+            row=0, column=0, sticky="w")
+        ctk.CTkLabel(head, text="v3.4", font=F_SM,
+                     text_color=C_HDR).grid(row=0, column=1, sticky="e")
 
-        def lbl(text, row, bold=False, pady=(4, 0)):
-            ctk.CTkLabel(lp, text=text,
-                         font=F_BOLD if bold else F_LBL).grid(
-                row=row, column=0, padx=14, pady=pady, sticky="w")
+        sf = ctk.CTkScrollableFrame(lp, fg_color="transparent")
+        sf.grid(row=1, column=0, sticky="nsew", padx=2)
+        sf.grid_columnconfigure(0, weight=1)
 
-        lbl("KABELSKI GRAF  v3.4", 0, bold=True, pady=(14, 6))
+        self._sec_row = 0
+
+        def sekcija(title):
+            f = ctk.CTkFrame(sf, fg_color=C_SEC, corner_radius=8)
+            f.grid(row=self._sec_row, column=0, sticky="ew",
+                   padx=4, pady=(0, 6))
+            f.grid_columnconfigure(1, weight=1)
+            ctk.CTkLabel(f, text=title, font=F_SEC,
+                         text_color=C_HDR).grid(
+                row=0, column=0, columnspan=3, padx=10, pady=(6, 2),
+                sticky="w")
+            self._sec_row += 1
+            return f
+
+        def red(s, row, label, widget):
+            ctk.CTkLabel(s, text=label, font=F_LBL).grid(
+                row=row, column=0, padx=(10, 4), pady=1, sticky="w")
+            widget.grid(row=row, column=2, padx=(4, 10), pady=1, sticky="e")
 
         # ── MOD RADA ──────────────────────────────────────────
-        mf = ctk.CTkFrame(lp, fg_color="#0F2030", corner_radius=8)
-        mf.grid(row=1, column=0, padx=10, pady=(0, 8), sticky="ew")
-        mf.grid_columnconfigure((0, 1), weight=1)
-        ctk.CTkLabel(mf, text="MOD RADA", font=F_SM).grid(
-            row=0, column=0, columnspan=2, pady=(7, 3))
-        ctk.CTkRadioButton(mf, text="EE – Serijski",
-                           variable=self._mode, value=MODE_EE,
-                           font=F_BOLD).grid(
-            row=1, column=0, padx=10, pady=(0, 8), sticky="w")
-        ctk.CTkRadioButton(mf, text="EK – Zvijezda",
-                           variable=self._mode, value=MODE_EK,
-                           font=F_BOLD).grid(
-            row=1, column=1, padx=10, pady=(0, 8), sticky="w")
+        s = sekcija("MOD RADA")
+        ctk.CTkRadioButton(s, text="EE – Serijski", variable=self._mode,
+                           value=MODE_EE, font=F_LBL,
+                           radiobutton_width=16, radiobutton_height=16).grid(
+            row=1, column=0, padx=(10, 4), pady=(0, 8), sticky="w")
+        ctk.CTkRadioButton(s, text="EK – Zvijezda", variable=self._mode,
+                           value=MODE_EK, font=F_LBL,
+                           radiobutton_width=16, radiobutton_height=16).grid(
+            row=1, column=1, columnspan=2, padx=4, pady=(0, 8), sticky="w")
 
-        # ── CSV ─────────────────────────────────────────────────
-        lbl("Kabeli_Export.csv:", 2)
-        ctk.CTkButton(lp, text="Odaberi...", width=112, font=F_SM,
-                      command=self._odaberi_k).grid(
-            row=3, column=0, padx=14, pady=(2, 0), sticky="w")
-        self._lbl_k = ctk.CTkLabel(lp, text="—", font=F_SM,
-                                    text_color="#78909C", wraplength=258)
-        self._lbl_k.grid(row=4, column=0, padx=14, sticky="w")
+        # ── ULAZNI PODACI ─────────────────────────────────────
+        s = sekcija("ULAZNI PODACI")
+        self._btn_k = ctk.CTkButton(
+            s, text="Kabeli_Export.csv …", height=28, font=F_SM,
+            anchor="w", fg_color="#16324A", hover_color="#1E4264",
+            command=self._odaberi_k)
+        self._btn_k.grid(row=1, column=0, columnspan=3,
+                         padx=10, pady=(0, 4), sticky="ew")
+        self._btn_b = ctk.CTkButton(
+            s, text="Circuit_Data_Export.csv …", height=28, font=F_SM,
+            anchor="w", fg_color="#16324A", hover_color="#1E4264",
+            command=self._odaberi_b)
+        self._btn_b.grid(row=2, column=0, columnspan=3,
+                         padx=10, pady=(0, 8), sticky="ew")
 
-        lbl("Circuit_Data_Export.csv:", 5, pady=(6, 0))
-        ctk.CTkButton(lp, text="Odaberi...", width=112, font=F_SM,
-                      command=self._odaberi_b).grid(
-            row=6, column=0, padx=14, pady=(2, 0), sticky="w")
-        self._lbl_b = ctk.CTkLabel(lp, text="—", font=F_SM,
-                                    text_color="#78909C", wraplength=258)
-        self._lbl_b.grid(row=7, column=0, padx=14, sticky="w")
-
-        # ── TOLERANCIJA ─────────────────────────────────────────
-        tf = ctk.CTkFrame(lp, fg_color="transparent")
-        tf.grid(row=8, column=0, padx=0, pady=(8, 0), sticky="ew")
-        tf.grid_columnconfigure(0, weight=1)
-
-        r_tf = ctk.CTkFrame(tf, fg_color="transparent")
-        r_tf.grid(row=0, column=0, padx=14, sticky="ew")
-        r_tf.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(r_tf, text="Tolerancija spajanja:", font=F_LBL).grid(
-            row=0, column=0, sticky="w")
-        self._lbl_tol_v = ctk.CTkLabel(r_tf,
-                                        text=f"{DEFAULT_TOL:.0f} jed.",
-                                        font=F_BOLD, text_color="#64B5F6")
-        self._lbl_tol_v.grid(row=0, column=1, sticky="e")
-
-        ctk.CTkSlider(tf, from_=1, to=1000, variable=self._tol,
-                      command=self._on_tol, width=262).grid(
-            row=1, column=0, padx=14, pady=(3, 0), sticky="ew")
-
-        ctk.CTkButton(tf, text="⚙  Predloži toleranciju", height=30,
-                      font=F_SM, fg_color="transparent", border_width=1,
+        # ── GRAF ──────────────────────────────────────────────
+        s = sekcija("GRAF")
+        ctk.CTkLabel(s, text="Tolerancija:", font=F_LBL).grid(
+            row=1, column=0, padx=(10, 4), sticky="w")
+        self._lbl_tol_v = ctk.CTkLabel(s, text=f"{DEFAULT_TOL:.0f} jed.",
+                                        font=("Segoe UI", 12, "bold"),
+                                        text_color="#64B5F6")
+        self._lbl_tol_v.grid(row=1, column=2, padx=(0, 10), sticky="e")
+        ctk.CTkSlider(s, from_=1, to=1000, variable=self._tol,
+                      command=self._on_tol, height=14).grid(
+            row=2, column=0, columnspan=3, padx=10, pady=2, sticky="ew")
+        ctk.CTkButton(s, text="Predloži toleranciju", height=24, font=F_SM,
+                      fg_color="transparent", border_width=1,
+                      border_color="#2A4A6A", text_color="#90CAF9",
                       command=self._predlozi_tol).grid(
-            row=2, column=0, padx=14, pady=(5, 0), sticky="ew")
+            row=3, column=0, columnspan=3, padx=10, pady=(0, 6), sticky="ew")
+        ctk.CTkLabel(s, text="RK (Circuit_Label):", font=F_LBL).grid(
+            row=4, column=0, padx=(10, 4), pady=(0, 8), sticky="w")
+        ctk.CTkEntry(s, textvariable=self._rk, height=26, font=F_LBL).grid(
+            row=4, column=1, columnspan=2, padx=(4, 10), pady=(0, 8),
+            sticky="ew")
 
-        # ── RK LABEL ────────────────────────────────────────────
-        lbl("Razvodna kutija (Circuit_Label):", 9, pady=(8, 0))
-        ctk.CTkEntry(lp, textvariable=self._rk, width=200,
-                     height=30, font=F_LBL).grid(
-            row=10, column=0, padx=14, pady=(2, 0), sticky="w")
+        # ── DODACI I JEDINICE ─────────────────────────────────
+        s = sekcija("DODACI I JEDINICE")
+        red(s, 1, "Dodatak na duljinu (%):",
+            ctk.CTkEntry(s, textvariable=self._buffer, width=70,
+                         height=26, font=F_LBL, justify="right"))
+        red(s, 2, "Rezerva po spoju:",
+            ctk.CTkEntry(s, textvariable=self._rezerva, width=70,
+                         height=26, font=F_LBL, justify="right"))
+        red(s, 3, "Jedinica DWG-a:",
+            ctk.CTkOptionMenu(s, variable=self._unit,
+                              values=["jed.", "mm", "cm", "m"],
+                              width=70, height=26, font=F_SM,
+                              command=lambda *_: self._on_unit_change()))
+        ctk.CTkLabel(s, text="Rezerva: EE = n+1, EK = 2 terminacije",
+                     font=F_SM, text_color="#546E7A").grid(
+            row=4, column=0, columnspan=3, padx=10, pady=(2, 6), sticky="w")
 
-        # ── BUFFER % ────────────────────────────────────────────
-        bf_frame = ctk.CTkFrame(lp, fg_color="#0F2030", corner_radius=8)
-        bf_frame.grid(row=11, column=0, padx=10, pady=(8, 0), sticky="ew")
-        bf_frame.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(bf_frame, text="Dodatak na duljinu (%):",
-                     font=F_LBL).grid(
-            row=0, column=0, padx=12, pady=(8, 2), sticky="w")
-        buf_row = ctk.CTkFrame(bf_frame, fg_color="transparent")
-        buf_row.grid(row=1, column=0, padx=12, pady=(0, 8), sticky="ew")
-        buf_row.grid_columnconfigure(0, weight=1)
-        ctk.CTkEntry(buf_row, textvariable=self._buffer,
-                     width=90, height=30, font=F_LBL).grid(
-            row=0, column=0, sticky="w")
-        ctk.CTkLabel(buf_row, text="%", font=F_LBL,
-                     text_color="#78909C").grid(
-            row=0, column=1, padx=(6, 0), sticky="w")
-
-        # Rezerva po spoju (fiksni dodatak po terminaciji)
-        ctk.CTkLabel(bf_frame, text="Rezerva po spoju (jed.):",
-                     font=F_LBL).grid(
-            row=2, column=0, padx=12, pady=(0, 2), sticky="w")
-        rez_row = ctk.CTkFrame(bf_frame, fg_color="transparent")
-        rez_row.grid(row=3, column=0, padx=12, pady=(0, 8), sticky="ew")
-        rez_row.grid_columnconfigure(0, weight=1)
-        ctk.CTkEntry(rez_row, textvariable=self._rezerva,
-                     width=90, height=30, font=F_LBL).grid(
-            row=0, column=0, sticky="w")
-        ctk.CTkLabel(rez_row, text="EE: n+1 | EK: 2 term.", font=F_SM,
+        # ── VERTIKALNI RAZVOD ─────────────────────────────────
+        s = sekcija("VERTIKALNI RAZVOD")
+        vr = ctk.CTkFrame(s, fg_color="transparent")
+        vr.grid(row=1, column=0, columnspan=3, padx=6, sticky="ew")
+        ctk.CTkRadioButton(vr, text="Po podu", variable=self._v_tip,
+                           value=RAZVOD_POD, font=F_SM,
+                           radiobutton_width=15, radiobutton_height=15).grid(
+            row=0, column=0, padx=4, sticky="w")
+        ctk.CTkRadioButton(vr, text="Spušteni strop", variable=self._v_tip,
+                           value=RAZVOD_STROP, font=F_SM,
+                           radiobutton_width=15, radiobutton_height=15).grid(
+            row=0, column=1, padx=4, sticky="w")
+        for i, (txt, var) in enumerate(
+                (("Visina etaže:",   self._v_etaza),
+                 ("Visina RK:",      self._v_rk_h),
+                 ("Visina uređaja:", self._v_uredaj)), start=2):
+            red(s, i, txt,
+                ctk.CTkEntry(s, textvariable=var, width=70, height=26,
+                             font=F_LBL, justify="right"))
+        ctk.CTkLabel(s, text="U istim jedinicama kao DWG", font=F_SM,
                      text_color="#546E7A").grid(
-            row=0, column=1, padx=(6, 0), sticky="w")
+            row=5, column=0, columnspan=3, padx=10, pady=(2, 6), sticky="w")
 
-        # Jedinice DWG-a (rezultati u metrima osim 'jed.')
-        unit_row = ctk.CTkFrame(bf_frame, fg_color="transparent")
-        unit_row.grid(row=4, column=0, padx=12, pady=(0, 8), sticky="ew")
-        ctk.CTkLabel(unit_row, text="Jedinica DWG-a:", font=F_LBL).grid(
-            row=0, column=0, sticky="w")
-        ctk.CTkOptionMenu(unit_row, variable=self._unit,
-                          values=["jed.", "mm", "cm", "m"],
-                          width=78, height=28, font=F_SM,
-                          command=lambda *_: self._on_unit_change()).grid(
-            row=0, column=1, padx=(8, 0), sticky="w")
-
-        # ── VERTIKALNI MODEL ────────────────────────────────────
-        vf = ctk.CTkFrame(lp, fg_color="#0A1E10", corner_radius=8)
-        vf.grid(row=12, column=0, padx=10, pady=(8, 0), sticky="ew")
-        vf.grid_columnconfigure(0, weight=1)
-
-        ctk.CTkLabel(vf, text="VERTIKALNI RAZVOD",
-                     font=("Arial", 10, "bold"),
-                     text_color="#81C784").grid(
-            row=0, column=0, padx=12, pady=(7, 3), sticky="w")
-
-        # Radio: tip razvoda
-        vr = ctk.CTkFrame(vf, fg_color="transparent")
-        vr.grid(row=1, column=0, padx=8, pady=(0, 4), sticky="ew")
-        vr.grid_columnconfigure((0, 1), weight=1)
-        ctk.CTkRadioButton(vr, text="Po podu",
-                           variable=self._v_tip, value=RAZVOD_POD,
-                           font=F_SM).grid(row=0, column=0, padx=4, sticky="w")
-        ctk.CTkRadioButton(vr, text="Spušteni strop",
-                           variable=self._v_tip, value=RAZVOD_STROP,
-                           font=F_SM).grid(row=0, column=1, padx=4, sticky="w")
-
-        def _v_row(parent, row, label, var, tooltip=""):
-            r = ctk.CTkFrame(parent, fg_color="transparent")
-            r.grid(row=row, column=0, padx=10, pady=1, sticky="ew")
-            r.grid_columnconfigure(1, weight=1)
-            ctk.CTkLabel(r, text=label, font=F_SM,
-                         text_color="#A5D6A7", width=100, anchor="w").grid(
-                row=0, column=0, sticky="w")
-            ctk.CTkEntry(r, textvariable=var, width=72,
-                         height=26, font=F_SM).grid(
-                row=0, column=1, padx=(4, 0), sticky="w")
-            ctk.CTkLabel(r, text="jed.", font=F_SM,
-                         text_color="#546E7A").grid(
-                row=0, column=2, padx=(4, 0), sticky="w")
-
-        _v_row(vf, 2, "Vis. etaže:",  self._v_etaza)
-        _v_row(vf, 3, "Vis. RK:",     self._v_rk_h)
-        _v_row(vf, 4, "Vis. uređaja:", self._v_uredaj)
-
-        ctk.CTkLabel(vf,
-                     text="Vrijednosti u istim jedinicama kao DWG",
-                     font=("Arial", 9), text_color="#37474F").grid(
-            row=5, column=0, padx=12, pady=(2, 6), sticky="w")
-
-        # ── GUMBI ───────────────────────────────────────────────
-        ctk.CTkButton(lp, text="▶  ANALIZIRAJ",
-                      font=("Arial", 13, "bold"), height=40,
+        # ── AKCIJE + VALIDACIJA (fiksno dno) ──────────────────
+        ctk.CTkButton(lp, text="▶   ANALIZIRAJ",
+                      font=("Segoe UI", 13, "bold"), height=36,
                       command=self._analiziraj).grid(
-            row=13, column=0, padx=14, pady=10, sticky="ew")
+            row=2, column=0, padx=10, pady=(8, 4), sticky="ew")
 
         btn_row = ctk.CTkFrame(lp, fg_color="transparent")
-        btn_row.grid(row=14, column=0, padx=14, sticky="ew")
+        btn_row.grid(row=3, column=0, padx=10, sticky="ew")
         btn_row.grid_columnconfigure((0, 1), weight=1)
-        ctk.CTkButton(btn_row, text="Reset  (R)", height=30, font=F_SM,
+        ctk.CTkButton(btn_row, text="Reset (R)", height=26, font=F_SM,
                       fg_color="transparent", border_width=1,
+                      border_color="#2A4A6A",
                       command=self._reset_view).grid(
             row=0, column=0, padx=(0, 3), sticky="ew")
-        ctk.CTkButton(btn_row, text="Export CSV", height=30, font=F_SM,
-                      fg_color="#1B5E20",
+        ctk.CTkButton(btn_row, text="Export CSV", height=26, font=F_SM,
+                      fg_color="#1B5E20", hover_color="#2E7D32",
                       command=self._exportiraj).grid(
             row=0, column=1, padx=(3, 0), sticky="ew")
 
-        # ── INFO / UPOZORENJA ───────────────────────────────────
-        lbl("Tolerancija / Validacija:", 15, pady=(10, 2))
-        self._txt_info = ctk.CTkTextbox(lp, height=120,
-                                         font=("Courier", 10), wrap="word")
-        self._txt_info.grid(row=16, column=0, padx=8, pady=(0, 4), sticky="ew")
+        ctk.CTkLabel(lp, text="VALIDACIJA", font=F_SEC,
+                     text_color=C_HDR).grid(
+            row=4, column=0, padx=12, pady=(8, 0), sticky="w")
+        self._txt_info = ctk.CTkTextbox(lp, height=108,
+                                         font=("Consolas", 10), wrap="word",
+                                         fg_color="#0E1C2A")
+        self._txt_info.grid(row=5, column=0, padx=8, pady=(2, 2), sticky="ew")
         self._txt_info.insert("end", "—")
         self._txt_info.configure(state="disabled")
 
-        self._lbl_status = ctk.CTkLabel(lp, text="Spreman.",
-                                         font=F_SM, text_color="#78909C",
-                                         wraplength=270)
-        self._lbl_status.grid(row=17, column=0, padx=12,
-                               pady=(0, 12), sticky="w")
+        self._lbl_status = ctk.CTkLabel(lp, text="Spreman.", font=F_SM,
+                                         text_color="#78909C",
+                                         wraplength=276, anchor="w",
+                                         justify="left")
+        self._lbl_status.grid(row=6, column=0, padx=12,
+                               pady=(0, 8), sticky="w")
 
         # ── DESNI DIO: Graf + Lista ──────────────────────────────
         rp = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
@@ -1171,15 +1145,16 @@ class KabelskiApp(ctk.CTk):
         pw.grid(row=0, column=0, sticky="nsew")
 
         self._gfr = ctk.CTkFrame(pw, fg_color="#0C1A28", corner_radius=0)
-        pw.add(self._gfr, minsize=630)
+        pw.add(self._gfr, minsize=630, stretch="always")
 
-        lf = ctk.CTkFrame(pw, width=320, corner_radius=0)
-        pw.add(lf, minsize=275)
+        lf = ctk.CTkFrame(pw, width=340, corner_radius=0)
+        pw.add(lf, minsize=275, width=340, stretch="never")
         lf.grid_rowconfigure(1, weight=1)
         lf.grid_columnconfigure(0, weight=1)
 
-        ctk.CTkLabel(lf, text="Strujni krugovi / Blokovi",
-                     font=("Arial", 15, "bold")).grid(
+        ctk.CTkLabel(lf, text="STRUJNI KRUGOVI / BLOKOVI",
+                     font=("Segoe UI", 12, "bold"),
+                     text_color="#6E8CA8").grid(
             row=0, column=0, padx=12, pady=(10, 4), sticky="w")
         self._sfr = ctk.CTkScrollableFrame(lf)
         self._sfr.grid(row=1, column=0, sticky="nsew", padx=5, pady=(0, 4))
@@ -1189,11 +1164,11 @@ class KabelskiApp(ctk.CTk):
         uk_frame.grid(row=2, column=0, padx=8, pady=(2, 10), sticky="ew")
         uk_frame.grid_columnconfigure(0, weight=1)
         self._lbl_uk = ctk.CTkLabel(uk_frame, text="Osnova: —",
-                                     font=("Arial", 14, "bold"),
+                                     font=("Segoe UI", 13, "bold"),
                                      text_color="#80CBC4")
         self._lbl_uk.grid(row=0, column=0, padx=12, pady=(8, 2), sticky="w")
         self._lbl_uk_buf = ctk.CTkLabel(uk_frame, text="S dodatkom: —",
-                                         font=("Arial", 15, "bold"),
+                                         font=("Segoe UI", 14, "bold"),
                                          text_color="#69F0AE")
         self._lbl_uk_buf.grid(row=1, column=0, padx=12, pady=(0, 8), sticky="w")
 
@@ -1221,8 +1196,9 @@ class KabelskiApp(ctk.CTk):
             filetypes=[("CSV", "*.csv"), ("Sve", "*.*")])
         if p:
             self._kp.set(p)
-            self._lbl_k.configure(text=os.path.basename(p),
-                                   text_color="#81C784")
+            self._btn_k.configure(text="✓  " + os.path.basename(p),
+                                  fg_color="#1B4332",
+                                  hover_color="#2D6A4F")
 
     def _odaberi_b(self):
         p = filedialog.askopenfilename(
@@ -1230,8 +1206,9 @@ class KabelskiApp(ctk.CTk):
             filetypes=[("CSV", "*.csv"), ("Sve", "*.*")])
         if p:
             self._bp.set(p)
-            self._lbl_b.configure(text=os.path.basename(p),
-                                   text_color="#81C784")
+            self._btn_b.configure(text="✓  " + os.path.basename(p),
+                                  fg_color="#1B4332",
+                                  hover_color="#2D6A4F")
 
     def _on_tol(self, val):
         self._lbl_tol_v.configure(text=f"{float(val):.0f} jed.")
@@ -1428,56 +1405,37 @@ class KabelskiApp(ctk.CTk):
 
         for r in self.rezultati:
             if r.get("greska"):
-                tekst = f"  {r['label']}\n  ⚠ {r['greska']}"
+                tekst = f"{r['label']}\n⚠ {r['greska']}"
                 fg, tc = "#3A1010", "#EF9A9A"
-                height = 54
+                height = 50
             else:
-                vert  = r.get("vertikalno", 0.0)
-                rez   = r.get("rezerva",    0.0)
-                horiz = r["duljina"] - vert - rez
-                fmt   = self._fmt
+                vert = r.get("vertikalno", 0.0)
+                rez  = r.get("rezerva",    0.0)
+                fmt  = self._fmt
 
+                line1 = f"{r['label']}   —   {fmt(r['duljina'])}"
                 if mode == MODE_EE:
                     n_bl  = r.get("n_blokova", "?")
-                    mst_l = r.get("mst_len", 0)
-                    snap  = r.get("snap_extra", 0)
-                    line2 = (f"  Trasa: {fmt(mst_l)}  +  snap: {fmt(snap)}"
-                             f"  [{n_bl} bl.]")
-                    if has_v:
-                        line3 = (f"  Vert: +{fmt(vert)}"
-                                 f"  (↑RK {v_rk_c:.0f}"
-                                 f" + (2·{n_bl}−1)×↕{v_ur_c:.0f})")
-                    else:
-                        line3 = ""
+                    line2 = (f"Trasa {fmt(r.get('mst_len', 0))}"
+                             f"  +  snap {fmt(r.get('snap_extra', 0))}"
+                             f"   [{n_bl} bl.]")
                 else:
-                    pl  = r.get("path_len", 0)
-                    srk = r.get("snap_rk", 0)
-                    sbl = r.get("snap_blok", 0)
-                    line2 = f"  Put: {fmt(pl)}  +  snap: {fmt(srk+sbl)}"
-                    if has_v:
-                        line3 = (f"  Vert: +{fmt(vert)}"
-                                 f"  (↑RK {v_rk_c:.0f}"
-                                 f" + ↕ur {v_ur_c:.0f})")
-                    else:
-                        line3 = ""
-                if rez > 0:
-                    line2 += f"  +  rez: {fmt(rez)}"
-
+                    line2 = (f"Put {fmt(r.get('path_len', 0))}"
+                             f"  +  snap "
+                             f"{fmt(r.get('snap_rk', 0) + r.get('snap_blok', 0))}")
+                extras = []
                 if has_v:
-                    line1 = (f"  {r['label']}\n"
-                             f"  Horiz: {fmt(horiz)}  +  vert: {fmt(vert)}"
-                             f"  =  {fmt(r['duljina'])}")
-                    tekst  = f"{line1}\n{line2}\n{line3}"
-                    height = 86
-                else:
-                    tekst  = (f"  {r['label']}\n"
-                              f"  Ukupno: {fmt(r['duljina'])}\n"
-                              f"{line2}")
-                    height = 68
+                    extras.append(f"vert {fmt(vert)}")
+                if rez > 0:
+                    extras.append(f"rez {fmt(rez)}")
+                line3 = "  +  ".join(extras)
+
+                tekst  = "\n".join(x for x in (line1, line2, line3) if x)
+                height = 50 + (16 if line3 else 0)
                 fg, tc = "transparent", "#E3F2FD"
 
             btn = ctk.CTkButton(
-                self._sfr, text=tekst, font=("Arial", 13),
+                self._sfr, text=tekst, font=("Segoe UI", 12),
                 anchor="w", fg_color=fg,
                 hover_color="#1A3A5F", text_color=tc,
                 height=height,
