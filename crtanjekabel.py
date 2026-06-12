@@ -14,6 +14,9 @@ Novo u v3.4 (točnost):
     samo na krajevima polilinija.
   - EE mod: duljina = suma JEDINSTVENIH bridova trase (bez dvostrukog
     brojanja zajedničkih dionica MST putanja).
+  - EE mod: PRIJEDLOG RAZDJELNIH KUTIJA — točke gdje se stablo kruga
+    grana izvan RK i trošila (tu je potreban spoj da bi izračun
+    vrijedio); prikaz na grafu (romb) + broj po krugu i ukupno.
   - Blokovi se spajaju projekcijom na najbliži SEGMENT trase (virtualni
     čvor), ne samo na najbliži vrh.
   - Z koordinata se čita i ulazi u fallback duljinu.
@@ -72,6 +75,7 @@ C_BLOK     = "#E53935"   # trošilo (kvadrat)
 C_RK       = "#FFD600"   # razvodna kutija (zvijezdica)
 C_VEZA     = "#9C27B0"   # isprekidana veza blok→čvor
 C_STACK    = "#FFFFFF"   # stacking broj
+C_KUTIJA   = "#FFB300"   # predložena razdjelna kutija (romb)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -218,29 +222,57 @@ def _razriješi_t_spojeve(kabeli, lens, tol_seg=2.0):
 class _Snap:
     """Spaja vrhove polilinija unutar tolerancije u isti čvor.
     Centar klastera = prosjek spojenih točaka; bira se NAJBLIŽI
-    centar (ne prvi), pa redoslijed kabela ne mijenja rezultat."""
+    centar (ne prvi), pa redoslijed kabela ne mijenja rezultat.
+
+    Dvije razine: KRAJEVI polilinija spajaju se punom tolerancijom
+    (tamo se kabeli fizički nastavljaju), a UNUTARNJI vrhovi punom
+    tolerancijom samo na klastere krajeva — međusobno tek malom
+    tolerancijom, da se paralelne trase ne sliju u istu."""
+
     def __init__(self, tol):
         self.tol = tol
         self.pts = []
         self._n  = []
+        self.end = []
 
-    def dodaj(self, pt, tol=None):
-        tol = self.tol if tol is None else tol
+    def _nadji(self, pt, tol, samo_end=False):
         best_i, best_d = -1, tol
         for i, c in enumerate(self.pts):
+            if samo_end and not self.end[i]:
+                continue
             d = _dist(pt, c)
             if d <= best_d:
                 best_d, best_i = d, i
-        if best_i >= 0:
-            n = self._n[best_i]
-            c = self.pts[best_i]
-            self.pts[best_i] = ((c[0] * n + pt[0]) / (n + 1),
-                                (c[1] * n + pt[1]) / (n + 1))
-            self._n[best_i] += 1
-            return best_i
+        return best_i
+
+    def _spoji(self, i, pt):
+        n = self._n[i]
+        c = self.pts[i]
+        self.pts[i] = ((c[0] * n + pt[0]) / (n + 1),
+                       (c[1] * n + pt[1]) / (n + 1))
+        self._n[i] += 1
+        return i
+
+    def _novi(self, pt, end):
         self.pts.append((pt[0], pt[1]))
         self._n.append(1)
+        self.end.append(end)
         return len(self.pts) - 1
+
+    def dodaj_kraj(self, pt):
+        i = self._nadji(pt, self.tol)
+        if i >= 0:
+            self.end[i] = True
+            return self._spoji(i, pt)
+        return self._novi(pt, True)
+
+    def dodaj_unutarnji(self, pt, tol_seg):
+        i = self._nadji(pt, self.tol, samo_end=True)
+        if i < 0:
+            i = self._nadji(pt, tol_seg)
+        if i >= 0:
+            return self._spoji(i, pt)
+        return self._novi(pt, False)
 
 
 def izgradi_graf(kabeli, hmap, tol):
@@ -257,17 +289,17 @@ def izgradi_graf(kabeli, hmap, tol):
     kabeli, lens = _razriješi_t_spojeve(kabeli, lens, tol_seg=ts)
 
     # Dvorazinski snap: krajevi polilinija punom tolerancijom,
-    # unutarnji vrhovi malom (da se paralelne trase ne sliju u istu).
+    # unutarnji vrhovi punom samo na klastere krajeva (vidi _Snap).
     snap = _Snap(tol)
     end_ids = {}
     for pi, poli in enumerate(kabeli):
-        end_ids[(pi, 0)] = snap.dodaj(poli[0], tol)
-        end_ids[(pi, len(poli) - 1)] = snap.dodaj(poli[-1], tol)
+        end_ids[(pi, 0)] = snap.dodaj_kraj(poli[0])
+        end_ids[(pi, len(poli) - 1)] = snap.dodaj_kraj(poli[-1])
 
     G = nx.Graph()
     for pi, poli in enumerate(kabeli):
         ids = [end_ids[(pi, vi)] if (pi, vi) in end_ids
-               else snap.dodaj(p, ts)
+               else snap.dodaj_unutarnji(p, ts)
                for vi, p in enumerate(poli)]
         hi  = hmap[pi] if pi < len(hmap) else {}
         for k in range(len(ids) - 1):
@@ -478,6 +510,12 @@ def analiziraj_ee(G, cvorovi, veze, rk_label, v_rk=0.0, v_uredaj=0.0,
     JEDINSTVENIH bridova svih putanja — zajedničke dionice se ne
     broje dvaput.
 
+    Prijedlog razdjelnih kutija: zajednička dionica se smije brojati
+    jednom samo ako na točki razdvajanja postoji mjesto za spoj.
+    Zato se za svaki krug vraćaju čvorovi u kojima se stablo grana
+    (stupanj ≥ 3) izvan RK i trošila — tu treba razdjelna kutija
+    da bi izračun vrijedio.
+
     Vraca (rezultati, edge_usage).
     """
     rk_v = next((v for v in veze if v["label"] == rk_label), None)
@@ -548,6 +586,13 @@ def analiziraj_ee(G, cvorovi, veze, rk_label, v_rk=0.0, v_uredaj=0.0,
                         used.add(e)
                         trasa += G[put[k]][put[k+1]]["weight"]
 
+        # Predložene razdjelne kutije: grananja stabla izvan RK/trošila
+        T = nx.Graph()
+        T.add_edges_from(used)
+        term_nodes = {izvor} | {b["cvor_idx"] for b in blokovi_k}
+        kutije = sorted(n for n in T.nodes()
+                        if T.degree(n) >= 3 and n not in term_nodes)
+
         rezultati.append({
             "label":      label,
             "tip":        "EE",
@@ -561,6 +606,7 @@ def analiziraj_ee(G, cvorovi, veze, rk_label, v_rk=0.0, v_uredaj=0.0,
             "greska":     None,
             "putanje":    putanje,
             "n_blokova":  n_bl,
+            "kutije":     kutije,
         })
 
     rezultati.sort(key=lambda r: r["duljina"] or float("inf"))
@@ -842,6 +888,28 @@ def nacrtaj(ax, G, cvorovi, kabeli_raw, blokovi, veze,
         ax.plot([bx, cx], [by, cy], color=C_VEZA, lw=0.7,
                 ls="--", alpha=0.45, zorder=5)
 
+    # 7b. Predložene razdjelne kutije (EE): romb na grananjima stabla
+    kutije_sve = set()
+    for r in rezultati:
+        if not r.get("greska"):
+            kutije_sve.update(r.get("kutije") or [])
+    kutije_hl = set()
+    if highlighted and not highlighted.get("greska"):
+        kutije_hl = set(highlighted.get("kutije") or [])
+    for k in kutije_sve:
+        if k >= len(cvorovi):
+            continue
+        kx, ky = cvorovi[k]
+        hl = k in kutije_hl
+        ax.scatter(kx, ky, marker="D",
+                   s=170 if hl else 120,
+                   c=C_HL_INNER if hl else C_KUTIJA,
+                   edgecolors="#4E342E", linewidths=1.4,
+                   zorder=8, alpha=0.95)
+        ax.annotate("K", (kx, ky), ha="center", va="center",
+                    fontsize=7, fontweight="bold", color="#3E2723",
+                    zorder=9)
+
     # 8. RK čvor iz grafa – uvijek vidljiv (i bez blokovi CSV-a)
     if izvor_idx is not None and izvor_idx < len(cvorovi):
         rx, ry = cvorovi[izvor_idx]
@@ -890,14 +958,18 @@ def nacrtaj(ax, G, cvorovi, kabeli_raw, blokovi, veze,
                  if mode == MODE_EE else "EK – Zvijezda (shortest path)")
 
     if highlighted and not highlighted.get("greska"):
+        kut_str = (f"   |   kutije: {len(kutije_hl)}"
+                   if mode == MODE_EE else "")
         naslov = (f"{highlighted['label']}   →   "
-                  f"{fmt(highlighted['duljina'])}")
+                  f"{fmt(highlighted['duljina'])}{kut_str}")
         nc = C_HL_INNER
     else:
         buf_str = (f"  |  +{buffer_pct:.1f}% = {fmt(uk_buffer)}"
                    if buffer_pct > 0 else "")
+        kut_str = (f"  |  Kutije: {len(kutije_sve)}"
+                   if mode == MODE_EE else "")
         naslov = (f"Mode: {mode_str}  |  Osnova: {fmt(uk_osnova)}"
-                  f"{buf_str}  |  Čvorovi: {G.number_of_nodes()}  |  Komp.: {n_komp}")
+                  f"{buf_str}{kut_str}  |  Komp.: {n_komp}")
         nc = "#CFD8DC"
 
     ax.set_title(naslov, fontsize=12, fontweight="bold", color=nc, pad=9)
@@ -1359,6 +1431,16 @@ class KabelskiApp(ctk.CTk):
             info.append("✓ Graf je spojen (1 komponenta)")
         if n_err:
             info.append(f"\n⚠  {n_err} krugova/blokova bez puta")
+        if mode == MODE_EE:
+            kutije_sve = set()
+            for r in self.rezultati:
+                if not r.get("greska"):
+                    kutije_sve.update(r.get("kutije") or [])
+            if kutije_sve:
+                info.append(f"\n◆ Predložene razdjelne kutije: "
+                            f"{len(kutije_sve)} (romb na grafu)")
+                info.append("  Grananje izvan trošila — bez kutije na tom"
+                            " mjestu kabel mora ići lančano (dulje).")
         self._set_info("\n".join(info),
                        "#EF9A9A" if (otoci or n_err) else "#A5D6A7")
 
@@ -1416,9 +1498,11 @@ class KabelskiApp(ctk.CTk):
                 line1 = f"{r['label']}   —   {fmt(r['duljina'])}"
                 if mode == MODE_EE:
                     n_bl  = r.get("n_blokova", "?")
+                    n_kut = len(r.get("kutije") or [])
+                    kut_s = f" · {n_kut} kut." if n_kut else ""
                     line2 = (f"Trasa {fmt(r.get('mst_len', 0))}"
                              f"  +  snap {fmt(r.get('snap_extra', 0))}"
-                             f"   [{n_bl} bl.]")
+                             f"   [{n_bl} bl.{kut_s}]")
                 else:
                     line2 = (f"Put {fmt(r.get('path_len', 0))}"
                              f"  +  snap "
