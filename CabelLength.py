@@ -20,17 +20,22 @@ class DistributionCabinet:
         return f"Cabinet(id={self.id}, x={self.x}, y={self.y})"
 
 class CablePlannerMST:
-    def __init__(self, nodes_df, edges_df, cabinet=None):
+    def __init__(self, nodes_df, edges_df, cabinet=None, metric="manhattan"):
         """
         Inicijalizacija Cable Plannera
-        
+
         Args:
             nodes_df: DataFrame sa stupcima [id, circuit_label, x, y]
             edges_df: DataFrame sa stupcima [from_node, to_node]
             cabinet: DistributionCabinet objekat (ako None, koristi default)
+            metric: 'manhattan' (default) – kabeli se u zgradi vode
+                    pravokutno (uz zidove/kanale), pa je L1 udaljenost
+                    realnija procjena od zračne linije; 'euclidean' za
+                    direktnu (zračnu) udaljenost.
         """
         self.nodes_data = nodes_df
         self.edges_data = edges_df
+        self.metric = metric
         self.cabinet = cabinet if cabinet else DistributionCabinet(0, 0, 0)
         self.circuits = {}
         self.graphs = {}
@@ -63,19 +68,21 @@ class CablePlannerMST:
         return colors
     
     def _calculate_distance(self, node1, node2):
-        """Izračunaj euklidsku udaljenost između dva čvora (u cm)"""
+        """Udaljenost između dva čvora (u cm) prema self.metric"""
         if hasattr(node1, 'x'):
             x1, y1 = node1.x, node1.y
         else:
             x1, y1 = node1['x'], node1['y']
-        
+
         if hasattr(node2, 'x'):
             x2, y2 = node2.x, node2.y
         else:
             x2, y2 = node2['x'], node2['y']
-        
+
         dx = x1 - x2
         dy = y1 - y2
+        if self.metric == "manhattan":
+            return abs(dx) + abs(dy)
         return math.sqrt(dx**2 + dy**2)
     
     def _build_circuit_graphs(self):
