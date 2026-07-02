@@ -104,26 +104,40 @@ def fmt_date(s):
         return s
 
 
-def mpp_parse(cfg_list):
-    """["MPP 1: 2 x 15", ...] -> {1: "2 x 15", ...}."""
+def mpp_segments(cfg_list):
+    """PVSOL Configuration -> {mppt: "sadrzaj"}.
+
+    Podrzava oba formata:
+      Huawei:    ["MPP 1: 2 x 15", "MPP 2: 2 x 15", ...]
+      SolarEdge: ["MPP 1: 1 x 81☆ [1 x 1]"]  ili  ["MPP 1: ", "1 x 23☆ [..] || 1 x 23☆ [..]"]
+    Elementi se spoje pa se izdvoje segmenti "MPP n: <sadrzaj>".
+    """
+    text = " ".join(str(x) for x in (cfg_list or []))
     out = {}
-    for item in cfg_list or []:
-        if ":" not in item:
-            continue
-        left, right = item.split(":", 1)
-        m = re.search(r"(\d+)", left)
-        if m:
-            out[int(m.group(1))] = right.strip()
+    matches = list(re.finditer(r"MPP\s*(\d+)\s*:", text))
+    for i, m in enumerate(matches):
+        mppt = int(m.group(1))
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        out[mppt] = text[m.end():end].strip()
     return out
 
 
-def parse_n_x_m(s):
-    """"2 x 15" -> (2, 15)  (broj stringova, broj panela po stringu)."""
-    m = re.search(r"(\d+)\s*[x×]\s*(\d+)", str(s))
-    if m:
-        return int(m.group(1)), int(m.group(2))
-    m = re.search(r"(\d+)", str(s))
-    return (1, int(m.group(1))) if m else (0, 0)
+def parse_inverter_strings(cfg_list):
+    """Vraca listu (mppt, broj_panela) po svakom stringu jednog invertera.
+
+    Paralelni stringovi na istom MPP-u razdvojeni su s "||". "N x M" znaci N
+    stringova po M panela. Optimizer oznaka ("☆ [1 x 1]") se zanemaruje.
+    """
+    rows = []
+    for mppt, content in sorted(mpp_segments(cfg_list).items()):
+        for part in content.split("||"):
+            head = re.split(r"[☆\[]", part)[0]  # makni optimizer oznaku
+            m = re.search(r"(\d+)\s*[x×]\s*(\d+)", head)
+            if not m:
+                continue
+            n_strings, panels = int(m.group(1)), int(m.group(2))
+            rows.extend([(mppt, panels)] * n_strings)
+    return rows
 
 
 def put(ws, r, c, value, *, font=BASE_FONT, fill=None, fmt=None, align=None, border=False):
@@ -178,20 +192,21 @@ def build_string_rows(data):
         for inv in inverters:
             qty = int(as_num(g(inv, "Quantity", "Value")) or 1)
             model = inv.get("Description", "")
-            mpp_map = mpp_parse(inv.get("Configuration"))
+            strings = parse_inverter_strings(inv.get("Configuration"))
             for _ in range(qty):
                 phys += 1
-                for mppt in sorted(mpp_map):
-                    n_strings, panels = parse_n_x_m(mpp_map[mppt])
-                    for s in range(1, n_strings + 1):
-                        rows.append({
-                            "token": f"IN{phys}-M{mppt}-S{s}-{panels}",
-                            "inverter": phys,
-                            "model": model,
-                            "mpp": mppt,
-                            "string": s,
-                            "panels": panels,
-                        })
+                s_per_mppt = {}
+                for mppt, panels in strings:
+                    s = s_per_mppt.get(mppt, 0) + 1
+                    s_per_mppt[mppt] = s
+                    rows.append({
+                        "token": f"IN{phys}-M{mppt}-S{s}-{panels}",
+                        "inverter": phys,
+                        "model": model,
+                        "mpp": mppt,
+                        "string": s,
+                        "panels": panels,
+                    })
     return rows
 
 
@@ -202,6 +217,76 @@ def write_strings_csv(rows, path):
         w.writerow([h for h, _ in STRING_COLUMNS])
         for r in rows:
             w.writerow([r[k] for _, k in STRING_COLUMNS])
+
+
+def fmt_hr(x):
+    """Broj -> string s hrvatskom decimalnom zarezom (455.9 -> '455,9')."""
+    s = f"{x:g}" if isinstance(x, (int, float)) else str(x)
+    return s.replace(".", ",")
+
+
+def build_podaci(data):
+    """Mapira PVSOL JSON na oznake iz lista 'Podaci' (stupac A).
+
+    Vraca listu (oznaka, vrijednost, tip) gdje je tip 'num' ili 'str'.
+    Oznake se TOCNO poklapaju s tekstom u stupcu A (zbog VBA poklapanja).
+    """
+    po = g(data, "ProjectOverview", default={})
+    td = g(po, "ThreeDDesign", default={})
+    cfg = g(po, "Configuration", default={})
+    ov = g(data, "Results", "Overview", default={})
+    sim = g(data, "Results", "Simulation", default={})
+    pv = g(sim, "PvSystem", default={})
+    sss = g(sim, "LevelOfSelfSufficiency", default={})
+    areas = g(td, "ModuleAreas", default=[])
+    inverters = [inv for grp in g(cfg, "ModuleAreas", default=[])
+                 for inv in grp.get("Inverters", [])]
+
+    dc = as_num(g(td, "TotalPower", "Value"))
+    ac = as_num(g(cfg, "TotalPower", "Value"))
+    n_panels = int(sum(g(a, "NumberOfPvModules", "Value") or 0 for a in areas))
+    proizvodnja = as_num(g(ov, "PvGeneratorEnergyAcGrid", "Value"))
+    potrosnja = as_num(g(po, "Consumption", "TotalConsumption", "Value"))
+    total_ss = g(sss, "TotalConsumption", "Value") or 0
+    covered = g(sss, "CoveredByGrid", "Value") or 0
+    own = as_num(total_ss - covered)
+    predaja = as_num(round((proizvodnja or 0) - own, 2))
+    n_inv = sum(int(as_num(g(inv, "Quantity", "Value")) or 1) for inv in inverters)
+
+    srows = build_string_rows(data)
+    n_strings = len(srows)
+    n_mppt = len({(r["inverter"], r["mpp"]) for r in srows})
+
+    return [
+        ("Instalirana snaga FNE", f"Pi-DC = {fmt_hr(dc)} kWp; Pv-AC = {fmt_hr(ac)} kW", "str"),
+        ("DC snaga elektrane", dc, "num"),
+        ("AC snaga elektrane", ac, "num"),
+        ("Broj panela", n_panels, "num"),
+        ("Godišnja proizvodnja FNE", proizvodnja, "num"),
+        ("Godišnja potrošnja objekta", potrosnja, "num"),
+        ("Potrošnja za vlastite potrebe", own, "num"),
+        ("Predaja u el. mrežu", predaja, "num"),
+        ("Preuzeta energija iz mreže", as_num(covered), "num"),
+        ("Razlika između potrošnje i proizvodnje", as_num(g(ov, "EnergyFromGrid", "Value")), "num"),
+        ("Spec. god. prinos SE", as_num(g(ov, "SpecificAnnualYield", "Value")), "num"),
+        ("Smanjenje emisije CO2", as_num(g(pv, "Co2EmissionsAvoided", "Value")), "num"),
+        ("Stupanj iskoristivosti", as_num(g(ov, "PerformanceRatio", "Value")), "num"),
+        ("Proizvođač panela", areas[0].get("Manufacturer", "") if areas else "", "str"),
+        ("Model panela", areas[0].get("ModuleData", "") if areas else "", "str"),
+        ("Proizvođač invertera", inverters[0].get("Manufacturer", "") if inverters else "", "str"),
+        ("Broj invertera", n_inv, "num"),
+        ("Model invertera", inverters[0].get("Description", "") if inverters else "", "str"),
+        ("Broj nizova", n_strings, "num"),
+        ("Broj MPPT-a", n_mppt, "num"),
+    ]
+
+
+def write_podaci_tsv(rows, path):
+    """label<TAB>value<TAB>type  (UTF-8, num vrijednosti s '.' decimalom)."""
+    with open(path, "w", encoding="utf-8") as f:
+        for label, value, typ in rows:
+            v = value if value is not None else ""
+            f.write(f"{label}\t{v}\t{typ}\n")
 
 
 def fill_stringovi(ws, rows):
@@ -301,7 +386,7 @@ def fill_invertori(ws, data):
             put(ws, r, 3, inv.get("Description", ""), border=True)
             put(ws, r, 4, inv.get("Manufacturer", ""), border=True)
             put(ws, r, 5, as_num(g(inv, "Quantity", "Value")), fmt="#,##0", align="center", border=True)
-            mpp = mpp_parse(inv.get("Configuration"))
+            mpp = mpp_segments(inv.get("Configuration"))
             for k in range(1, 5):
                 put(ws, r, 5 + k, mpp.get(k, ""), align="center", border=True)
             put(ws, r, 10, as_num(g(inv, "SizingFactor", "Value")), fmt="#,##0.0", align="right", border=True)
@@ -609,8 +694,24 @@ def run_cli(in_path, out_path):
           f"panela: {st['panels']}")
 
 
+def run_podaci(in_path, out_dir):
+    """Za VBA gumb: ispise pvsol_podaci.tsv + pvsol_stringovi.csv u out_dir."""
+    with open(in_path, encoding="utf-8") as f:
+        data = json.load(f)
+    podaci = build_podaci(data)
+    tsv = os.path.join(out_dir, "pvsol_podaci.tsv")
+    csvp = os.path.join(out_dir, "pvsol_stringovi.csv")
+    write_podaci_tsv(podaci, tsv)
+    srows = build_string_rows(data)
+    write_strings_csv(srows, csvp)
+    print(f"Spremljeno: {tsv}  ({len(podaci)} polja)")
+    print(f"Spremljeno: {csvp}  ({len(srows)} stringova, {sum(r['panels'] for r in srows)} panela)")
+
+
 if __name__ == "__main__":
-    if len(sys.argv) >= 3:
+    if len(sys.argv) >= 4 and sys.argv[1] == "--podaci":
+        run_podaci(sys.argv[2], sys.argv[3])
+    elif len(sys.argv) >= 3:
         run_cli(sys.argv[1], sys.argv[2])
     else:
         run_gui()
