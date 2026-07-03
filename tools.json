@@ -1,0 +1,170 @@
+{
+  "alati": [
+    {
+      "ime": "Crtanje Kabela",
+      "skripta": "crtanjekabel.py",
+      "kategorija": "AutoCAD / DWG",
+      "ikona": "🔌",
+      "opis": "Kabelski graf: AutoCAD CSV → trase i duljine kabela",
+      "dugi_opis": "Iz CSV exporta AutoCAD-a (polilinije + blokovi) gradi topološki graf mreže i računa STVARNE duljine trasa (lukovi/bulge uračunati). Dva moda: EE – Serijski (MST koji spaja RK i sve blokove jednog strujnog kruga) i EK – Zvijezda (najkraći put od RK do svakog bloka zasebno).",
+      "upute": "1. U AutoCAD-u napravi CSV export polilinija i blokova (LISP alat, sa Segment_Lengths)\n2. Pokreni alat i učitaj CSV\n3. Odaberi mod rada: EE – Serijski ili EK – Zvijezda\n4. Provjeri graf na prikazu i preuzmi izračunate duljine"
+    },
+    {
+      "ime": "Sync Properties",
+      "skripta": "syncProperties.py",
+      "kategorija": "AutoCAD / DWG",
+      "ikona": "🔄",
+      "opis": "Excel → Word/DWG sinkronizacija custom propertija",
+      "dugi_opis": "Čita parove naziv-vrijednost s Excel lista 'Podaci' (kolona A = naziv, B = vrijednost) i upisuje ih kao custom properties u više Word i/ili DWG datoteka odjednom. Word se obrađuje izravno kroz ZIP/XML (brzo, ne treba otvoren Word), DWG preko AutoCAD COM-a.",
+      "upute": "1. Pokreni alat i odaberi Excel s listom 'Podaci'\n2. Dodaj Word i/ili DWG datoteke koje želiš ažurirati\n3. Pokreni sinkronizaciju\n4. DOCPROPERTY polja u Wordu osvježe se automatski pri otvaranju dokumenta\nNapomena: za DWG dio mora biti instaliran AutoCAD"
+    },
+    {
+      "ime": "Sync DWG Fast",
+      "skripta": "syncDwgFast.py",
+      "kategorija": "AutoCAD / DWG",
+      "ikona": "⚡",
+      "opis": "Brzi upis Excel podataka u DWG — bez AutoCAD-a",
+      "dugi_opis": "Kao Sync Properties, ali DWG custom properties upisuje preko ACadSharp .NET helpera (dwg_props_helper.exe) — AutoCAD ne mora biti otvoren, ~0.3 s po datoteci umjesto 3-8 s preko COM-a. Opcionalno radi sigurnosnu kopiju svake datoteke s vremenskim žigom.",
+      "upute": "1. Odaberi Excel s listom 'Podaci'\n2. Odaberi DWG datoteke (ili mapu)\n3. Po želji uključi opciju sigurnosne kopije\n4. Pokreni upis\nNapomena: AutoCAD ne smije držati datoteke otvorene/zaključane"
+    },
+    {
+      "ime": "Razvodne Ploče",
+      "modul": "ormari.app",
+      "kategorija": "Razvodni ormari i kabeli",
+      "ikona": "🗄️",
+      "opis": "Kalkulator i shema razvodnih ormara",
+      "dugi_opis": "Desktop aplikacija za slaganje razvodnih ormara: elementi ploče s bazom kabela, proračuni, crtanje sheme na platnu i export. Projekti se mogu spremati i ponovno učitavati.",
+      "upute": "1. Dodaj elemente ploče na platno\n2. Uredi svojstva elemenata u bočnom panelu (kabeli iz baze)\n3. Provjeri proračune\n4. Spremi projekt / exportaj shemu"
+    },
+    {
+      "ime": "Duljina Kabela",
+      "skripta": "CabelLength.py",
+      "kategorija": "Razvodni ormari i kabeli",
+      "ikona": "📏",
+      "opis": "Proračun i vizualizacija duljina kabela u razvodnoj mreži",
+      "dugi_opis": "Graf razdjelnih ormara i potrošača (networkx + matplotlib): unosiš čvorove i veze, alat crta mrežu i računa duljine kabela po granama.",
+      "upute": "1. Unesi razdjelne ormare i potrošače s pozicijama\n2. Poveži čvorove vezama\n3. Očitaj izračunate duljine na grafu"
+    },
+    {
+      "ime": "Excel u Word",
+      "skripta": "excelToWord.py",
+      "kategorija": "Excel / Word",
+      "ikona": "📄",
+      "opis": "Upis Excel 'Podaci' u custom properties Word dokumenta",
+      "dugi_opis": "Odabereš Excel (list 'Podaci') i Word predložak; alat napravi kopiju Worda s vremenskim žigom (…_Nova_kopija_<datum>), upiše/ažurira custom properties preko Word COM-a i osvježi sva polja, uključujući zaglavlja i podnožja. Original ostaje netaknut.",
+      "upute": "1. Odaberi Excel datoteku (mora imati list 'Podaci': A = naziv, B = vrijednost)\n2. Odaberi Word dokument (.docx/.docm)\n3. Pričekaj — kopija s upisanim podacima sprema se pored originala\nNapomena: mora biti instaliran Word"
+    },
+    {
+      "ime": "Pretraga Word",
+      "skripta": "search.py",
+      "kategorija": "Excel / Word",
+      "ikona": "🔍",
+      "opis": "Indeksirana pretraga sadržaja .docx/.docm dokumenata",
+      "dugi_opis": "Indeksira sve Word dokumente u mapi (tekst po stranicama) u .pkl bazu, pa omogućuje brzu pretragu s prikazom konteksta oko pronađene riječi. Spremljenu bazu možeš ponovno koristiti bez novog indeksiranja.",
+      "upute": "1. Pri pokretanju: 'Yes' = učitaj postojeću .pkl bazu, 'No' = indeksiraj novu mapu\n2. Kod novog indeksiranja spremi bazu za buduće pretrage\n3. Upiši pojam i pretraži; rezultati pokazuju dokument, stranicu i kontekst\n4. Gumb 'Kopiraj' sprema rezultate u clipboard"
+    },
+    {
+      "ime": "Scrape Excel",
+      "skripta": "scrape_Excel.py",
+      "kategorija": "Excel / Word",
+      "ikona": "📊",
+      "opis": "Skupi ključne podatke iz svih .xlsm u mapi → CSV",
+      "dugi_opis": "Rekurzivno prolazi odabranu mapu i iz lista 'Podaci' svake .xlsm datoteke čita: proizvođač/model invertera i panela, zakupljenu snagu i instaliranu snagu FNE. Sve sprema u jednu CSV tablicu s putanjama datoteka.",
+      "upute": "1. Odaberi root mapu za pretraživanje\n2. Odaberi gdje spremiti rezultat.csv\n3. Pričekaj da obrada završi"
+    },
+    {
+      "ime": "Scrape Excel Podaci",
+      "skripta": "scrapeExcelPodaci.py",
+      "kategorija": "Excel / Word",
+      "ikona": "📈",
+      "opis": "Ekstraktor podataka o panelima iz .xlsm datoteka → CSV",
+      "dugi_opis": "Rekurzivno pretražuje mapu, u svakoj .xlsm datoteci traži ključne riječi (podaci o panelima) i pronađene vrijednosti sprema u CSV (pandas, UTF-8-sig). Prikazuje napredak obrade i sažetak na kraju.",
+      "upute": "1. Odaberi polaznu mapu\n2. Odaberi lokaciju i ime CSV datoteke\n3. Pričekaj obradu — na kraju se prikaže sažetak (obrađeno/preskočeno)"
+    },
+    {
+      "ime": "Scrape Word",
+      "skripta": "scrape_word.py",
+      "kategorija": "Excel / Word",
+      "ikona": "📝",
+      "opis": "Skupi custom properties iz svih .docx/.docm u mapi → CSV",
+      "dugi_opis": "Rekurzivno prolazi mapu i iz custom properties Word dokumenata čita: proizvođač/model invertera i panela, zakupljenu snagu, instaliranu snagu FNE te mjesto i datum. Rezultat sprema u CSV tablicu.",
+      "upute": "1. Odaberi root mapu za pretraživanje\n2. Odaberi gdje spremiti rezultat.csv\n3. Pričekaj da obrada završi"
+    },
+    {
+      "ime": "Excel Terminal",
+      "skripta": "Excel to terminal.py",
+      "kategorija": "Excel / Word",
+      "ikona": "⌨️",
+      "konzola": true,
+      "opis": "Upis vrijednosti s Excel 'Podaci' lista na fiksne pozicije u PDF",
+      "dugi_opis": "Čita parove s lista 'Podaci' iz .xlsm datoteke i upisuje ih na unaprijed definirane (hardkodirane) koordinate u PDF obrazac (HEP zahtjev). Pročitane vrijednosti i mapiranja ispisuje u konzolni prozor radi kontrole.",
+      "upute": "1. Odaberi .xlsm datoteku (list 'Podaci')\n2. Odaberi ulazni PDF obrazac\n3. Odaberi gdje spremiti ispunjeni PDF\n4. U konzoli provjeri koje su vrijednosti mapirane\nNapomena: pozicije upisa mijenjaju se u skripti (hardcoded_positions)"
+    },
+    {
+      "ime": "PVSOL u Excel",
+      "skripta": "pvsolToExcel.py",
+      "kategorija": "Excel / Word",
+      "ikona": "☀️",
+      "opis": "PVSOL JSON export → formatirani Excel + lista stringova",
+      "dugi_opis": "Čita PVSOL premium JSON export i generira formatiran .xlsx s listovima Sažetak, PV polja, Invertori, Rezultati (+ opcionalno list STRINGOVI koji PanelStringsExcel.lsp čita izravno) te opcionalno .csv s popisom stringova za panelauto. Oznaka stringa: IN{inverter}-M{mppt}-S{string}-{broj_panela}.",
+      "upute": "1. U PVSOL-u napravi JSON export projekta\n2. Pokreni alat i odaberi JSON datoteku\n3. Odaberi što generirati (Excel / lista stringova) i gdje spremiti\nHeadless: python pvsolToExcel.py ulaz.json izlaz.xlsx"
+    },
+    {
+      "ime": "Print Organizer",
+      "skripta": "PrintOrganizer.py",
+      "kategorija": "PDF / Ispis",
+      "ikona": "🖨️",
+      "opis": "Razvrstaj PDF stranice: kopirka (A4/A3) vs ploter (A2+)",
+      "dugi_opis": "Analizira PDF projekta i razvrstava stranice po formatu papira: A4/A3 za kopirku, A2/A1/A0 i nestandardni formati za ploter. Prikazuje sažetak po skupinama i raspone stranica spremne za kopiranje u print dijalog.",
+      "upute": "1. Odaberi PDF datoteku projekta\n2. Klikni 'Analiziraj'\n3. Očitaj raspone stranica za kopirku i ploter\n4. Gumbom 'Kopiraj' prenesi raspon u clipboard za print dijalog"
+    },
+    {
+      "ime": "Excel PDF Placer",
+      "skripta": "ExcelPdfPlacer.py",
+      "kategorija": "PDF / Ispis",
+      "ikona": "📌",
+      "opis": "Klikom postavi Excel podatke na točne pozicije u PDF-u",
+      "dugi_opis": "Prikaže PDF na ekranu i klikom miša odrediš gdje ide koja vrijednost iz Excela. Pozicije se pamte u klik_pozicije.json po setovima (Zahtjev 1.2.1, Zahtjev 1.6.1, Rezerva), pa se isti obrazac idući put ispunjava automatski.",
+      "upute": "1. Odaberi Excel s podacima i PDF obrazac\n2. Odaberi postojeći set pozicija ili klikni nove pozicije na prikazu\n3. Generiraj ispunjeni PDF\nNapomena: pozicije se čuvaju u klik_pozicije.json"
+    },
+    {
+      "ime": "HEPA Form Filler",
+      "skripta": "hepaFormFiller.py",
+      "kategorija": "PDF / Ispis",
+      "ikona": "📋",
+      "opis": "Automatsko punjenje HEPA PDF obrazaca iz Excel dokumentacije",
+      "dugi_opis": "Automatski ispunjava HEPA PDF obrasce podacima iz Excel projektne dokumentacije. Ovisnosti: PyMuPDF, Pillow, openpyxl, PyPDFForm.",
+      "upute": "1. Pokreni alat\n2. Odaberi Excel projektnu dokumentaciju\n3. Odaberi HEPA PDF obrazac i pregledaj/potvrdi ispunjena polja\n4. Spremi ispunjeni PDF"
+    },
+    {
+      "ime": "PDF Form Filler",
+      "skripta": "pdfFormFiller.py",
+      "kategorija": "PDF / Ispis",
+      "ikona": "🧾",
+      "konzola": true,
+      "opis": "Ispis polja PDF forme (pomoćni alat za razvoj)",
+      "dugi_opis": "Pomoćni alat: preko PyPDFForm-a ispiše u konzolu popis svih polja form-fillable PDF obrasca i njihove trenutne vrijednosti — korisno za pripremu automatskog punjenja.",
+      "upute": "1. Otvori skriptu i upiši putanju do PDF-a\n2. Pokreni — popis polja se ispiše u konzolu"
+    },
+    {
+      "ime": "PDF Pozicija",
+      "skripta": "pdfPosition.py",
+      "kategorija": "PDF / Ispis",
+      "ikona": "🎯",
+      "konzola": true,
+      "opis": "Ispis teksta i koordinata s PDF stranice (za pozicioniranje)",
+      "dugi_opis": "Pomoćni alat: ispiše sve tekstualne blokove i njihove koordinate s odabrane PDF stranice — koristi se za pronalazak X/Y koordinata pri slaganju automatskog punjenja obrazaca.",
+      "upute": "1. Otvori skriptu i upiši putanju do PDF-a i broj stranice\n2. Pokreni — blokovi teksta s koordinatama ispišu se u konzolu"
+    },
+    {
+      "ime": "Excel u PDF",
+      "skripta": "ExcelToPdf.py",
+      "kategorija": "PDF / Ispis",
+      "ikona": "✒️",
+      "konzola": true,
+      "opis": "Dodaj tekst na zadanu poziciju u PDF-u",
+      "dugi_opis": "Jednostavan alat: odabereš PDF, u konzoli upišeš tekst i X/Y koordinate (u točkama) te broj stranice, i alat spremi novi PDF s dodanim tekstom.",
+      "upute": "1. Odaberi ulazni PDF i gdje spremiti izlazni\n2. U konzoli upiši tekst, X i Y koordinatu te broj stranice (0 = prva)\n3. Novi PDF se sprema na odabranu lokaciju"
+    }
+  ]
+}
