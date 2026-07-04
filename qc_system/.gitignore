@@ -1,0 +1,7 @@
+# generirani artefakti QC sustava
+qc.db
+*.db
+demo_projekt/
+demo_izvjestaj.html
+izvjestaj*.html
+__pycache__/

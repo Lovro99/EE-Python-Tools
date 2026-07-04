@@ -1,0 +1,60 @@
+# QC konfiguracija — opis predlozaka izvora podataka.
+#
+# Ovdje JEDNOM opises svoje standardne predloske (bilanca, DWG export,
+# tehnicki opis) i od tada sustav zna gdje je koji podatak u svakom
+# projektu radenom po tim predlošcima.
+#
+# Zajednicki kljuc svega je "oznaka" (oznaka opreme/strujnog kruga).
+# Imena atributa su slobodna, ali sufiks odreduje tip:
+#   *_kw, *_a, *_v, *_m, *_mm2 ... -> broj (normalizira se zarez,
+#   jedinica, npr. "15,0 kW" == "15 kW" == "15000 W")
+#   ostalo -> tekst (velika slova, bez razmaka, x == ×)
+
+predlosci:
+
+  # ── Excel bilanca snaga ──────────────────────────────────────────
+  - ime: bilanca_snaga
+    tip: excel
+    datoteka: "*bilanca*.xlsx"
+    list: "Bilanca"
+    prvi_red: 3            # red od kojeg pocinju podaci
+    kolone:
+      A: oznaka
+      C: snaga_kw
+      D: struja_a
+      E: tip_kabela
+      F: zastita
+
+  # ── CSV export atributa blokova iz AutoCAD-a ─────────────────────
+  # (generira ga postojeci ExportCSVdata.lsp / slican LISP export)
+  - ime: dwg_export
+    tip: dwg_csv
+    datoteka: "*dwg*.csv"
+    separator: ";"
+    kolone:
+      CIRCUIT_LABEL: oznaka
+      SNAGA: snaga_kw
+      STRUJA: struja_a
+      KABEL: tip_kabela
+      ZASTITA: zastita
+
+  # ── Word tehnicki opis ───────────────────────────────────────────
+  - ime: tehnicki_opis
+    tip: word
+    datoteka: "*opis*.docx"
+    tablice:
+      kljucna_kolona: ["oznaka", "oznaka kruga", "krug"]
+      atributi:
+        "snaga": snaga_kw
+        "snaga (kw)": snaga_kw
+        "p (kw)": snaga_kw
+        "struja": struja_a
+        "in (a)": struja_a
+        "kabel": tip_kabela
+        "tip kabela": tip_kabela
+        "zaštita": zastita
+        "zastita": zastita
+        "osigurač": zastita
+    svojstva:
+      "instalirana snaga": inst_snaga_kw
+      "zakupljena snaga": zakup_snaga_kw
