@@ -128,7 +128,7 @@ def _extract_properties(path, cfg):
     return rows
 
 
-def extract_word(path, template):
+def extract_word(path, template, field_dict=None):
     rows = []
     if template.get("tablice"):
         rows.extend(_extract_tables(Document(path), template["tablice"]))

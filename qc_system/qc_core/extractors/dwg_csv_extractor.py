@@ -20,7 +20,7 @@ import csv
 from ..normalize import normalize_tag, normalize_value
 
 
-def extract_dwg_csv(path, template):
+def extract_dwg_csv(path, template, field_dict=None):
     sep = template.get("separator", ";")
     col_map = {k.strip().upper(): v for k, v in template["kolone"].items()}
     key_header = next(

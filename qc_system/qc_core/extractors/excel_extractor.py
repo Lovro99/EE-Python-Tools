@@ -23,7 +23,7 @@ from openpyxl.utils import column_index_from_string
 from ..normalize import normalize_tag, normalize_value
 
 
-def extract_excel(path, template):
+def extract_excel(path, template, field_dict=None):
     wb = load_workbook(path, data_only=True, read_only=True)
     try:
         sheet_name = template.get("list")

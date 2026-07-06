@@ -7,6 +7,7 @@ import yaml
 
 from . import db
 from .extractors import EXTRACTORS
+from .fields import FieldDict
 
 
 def load_config(config_path):
@@ -32,6 +33,7 @@ def scan_project(conn, project, project_dir, config):
     Vraca listu (datoteka, ime_predloska, broj_opazanja | greska_str).
     """
     project_dir = Path(project_dir)
+    field_dict = FieldDict(config.get("polja"))
     results = []
     seen = set()
     for template in config["predlosci"]:
@@ -46,7 +48,7 @@ def scan_project(conn, project, project_dir, config):
                 continue  # prvi predlozak koji upari datoteku "vlasnik" je
             seen.add(path)
             try:
-                rows = extractor(str(path), template)
+                rows = extractor(str(path), template, field_dict=field_dict)
                 n = db.replace_source(conn, project, str(path), source_type, rows)
                 results.append((path.name, template["ime"], n))
             except Exception as e:  # jedna losa datoteka ne rusi ostale

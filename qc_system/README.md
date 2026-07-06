@@ -49,12 +49,37 @@ Usporedba grupira opažanja po (oznaka, atribut):
 | `UPOZORENJE` | podatak postoji samo u jednom tipu izvora |
 | `OK` | svi izvori se slažu |
 
-## Konfiguracija (`qc_config.yaml`)
+## Dva tipa projekta
+
+Sustav podržava dva načina spajanja podataka — biraš ga tipom predloška
+u konfiguraciji:
+
+| Način | Ključ spajanja | Tipovi predložaka | Primjer projekta |
+|---|---|---|---|
+| **tablični** | oznaka opreme/kruga (`RO-1`) | `excel`, `word`, `dwg_csv` | razdjelne ploče, instalacije |
+| **key-value** | naziv polja (`Model invertera`) | `excel_kv`, `word_kv` | FNE — Excel „Podaci" ↔ Word properties ↔ DWG title-block |
+
+Za FNE projekte koristi `qc_config_fne.yaml`:
+
+```bash
+python qc.py scan "C:/Projekti/FNE_Kadijevic" --projekt FNE_Kadijevic --config qc_config_fne.yaml
+python qc.py report --projekt FNE_Kadijevic --html izvjestaj.html
+```
+
+Key-value način hvata tipičnu FNE grešku — **zastarjele/duplirane
+vrijednosti iz šablone**: npr. Word svojstvo `Model  invertera` (dupli
+razmak) ili `Izlazna struja invertera ` (razmak na kraju) s vrijednošću
+zaostalom od prošlog projekta koja se ne slaže s Excelom. Rječnik
+`polja:` mapira sve nazivne varijante (uklj. tipfelere kao
+`Proizođač` bez „v") na jedno kanonsko polje pa se vrijednosti mogu
+usporediti.
+
+## Konfiguracija
 
 Kontekst podataka deklarira se **jednom po predlošku** — koji list,
-koja kolona, koje zaglavlje tablice znači koji atribut. Zajednički
-ključ svih izvora je `oznaka` (oznaka opreme / strujnog kruga, npr.
-`RO-1`). Detalji i primjeri su u komentarima same datoteke.
+koja kolona/zaglavlje/svojstvo znači koji podatak. Detalji i primjeri
+su u komentarima datoteka `qc_config.yaml` (tablični) i
+`qc_config_fne.yaml` (key-value + rječnik polja).
 
 Imena atributa sa sufiksom jedinice (`snaga_kw`, `struja_a`,
 `presjek_mm2`, ...) tretiraju se kao brojevi: `15,0 kW` == `15 kW` ==
@@ -66,14 +91,16 @@ Imena atributa sa sufiksom jedinice (`snaga_kw`, `struja_a`,
 ```
 qc_system/
 ├── qc.py                  # CLI: scan / report / demo
-├── qc_config.yaml         # opis predložaka (Excel/Word/DWG-CSV)
+├── qc_config.yaml         # tablični predlošci (Excel/Word/DWG-CSV)
+├── qc_config_fne.yaml     # key-value predlošci + rječnik polja (FNE)
 ├── qc_core/
 │   ├── db.py              # SQLite baza opažanja
-│   ├── normalize.py       # normalizacija oznaka i vrijednosti
+│   ├── normalize.py       # normalizacija (uklj. HR broj: "4.000,00"==4000)
+│   ├── fields.py          # rječnik polja (kanonsko ime + aliasi) za KV
 │   ├── compare.py         # usporedba → GRESKA/UPOZORENJE/OK
 │   ├── report.py          # konzolni i HTML izvještaj
 │   ├── scan.py            # uparivanje datoteka s predlošcima
-│   └── extractors/        # excel / word / dwg_csv
+│   └── extractors/        # excel / word / dwg_csv / excel_kv / word_kv
 └── demo/make_demo.py      # generator demo projekta s greškama
 ```
 

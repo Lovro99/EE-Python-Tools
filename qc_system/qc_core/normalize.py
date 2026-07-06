@@ -24,7 +24,35 @@ _UNIT_FACTORS = {
     "_pct": {"%": 1.0},
 }
 
-_NUM_RE = re.compile(r"^\s*(-?\d+(?:[.,]\d+)?)\s*([a-zA-Z%²]*)\s*$")
+_NUM_RE = re.compile(r"^\s*(-?[\d.,]+)\s*([a-zA-Z%²]*)\s*$")
+
+
+def _parse_hr_number(s):
+    """Parsiraj broj u hrvatskom/engleskom zapisu -> float ili None.
+
+      "4.000,00" -> 4000.0   (tocka=tisucice, zarez=decimala)
+      "1,093"    -> 1093.0   (tocka nije, zarez=tisucice ako 3 znamenke)
+      "15,0"     -> 15.0     (zarez=decimala)
+      "13.48"    -> 13.48    (tocka=decimala)
+    """
+    s = s.strip()
+    if not re.fullmatch(r"-?[\d.,]+", s):
+        return None
+    has_dot, has_comma = "." in s, "," in s
+    try:
+        if has_dot and has_comma:
+            # zadnji separator je decimalni, drugi su tisucice
+            if s.rfind(",") > s.rfind("."):
+                s = s.replace(".", "").replace(",", ".")
+            else:
+                s = s.replace(",", "")
+        elif has_comma:
+            # "1,093" (3 znamenke iza) = tisucice; "15,0" = decimala
+            frac = s.split(",")[-1]
+            s = s.replace(",", "") if len(frac) == 3 else s.replace(",", ".")
+        return float(s)
+    except ValueError:
+        return None
 
 
 def normalize_tag(raw):
@@ -41,10 +69,12 @@ def _is_numeric_attr(attribute):
 
 def _normalize_number(attribute, raw):
     """Vrati kanonski zapis broja ili None ako se ne da parsirati."""
-    m = _NUM_RE.match(raw.replace(" ", " "))
+    m = _NUM_RE.match(raw.replace(u" ", " "))
     if not m:
         return None
-    num = float(m.group(1).replace(",", "."))
+    num = _parse_hr_number(m.group(1))
+    if num is None:
+        return None
     unit = m.group(2).lower()
     if unit:
         suffix = next(
@@ -58,15 +88,26 @@ def _normalize_number(attribute, raw):
     return f"{round(num, 6):g}"
 
 
-def normalize_value(attribute, raw):
-    """Normaliziraj vrijednost atributa za usporedbu."""
+def normalize_value(attribute, raw, numeric=None):
+    """Normaliziraj vrijednost atributa za usporedbu.
+
+    numeric: None  -> tip se pogada iz sufiksa imena (_kw, _a, _mm2, ...)
+             True  -> uvijek pokusaj kao broj (KV polja s tip: broj)
+             False -> uvijek tekst
+    """
     s = str(raw).strip()
     if not s:
         return ""
-    if _is_numeric_attr(attribute):
-        n = _normalize_number(attribute, s)
-        if n is not None:
-            return n
+    want_num = _is_numeric_attr(attribute) if numeric is None else numeric
+    if want_num:
+        converted = _normalize_number(attribute, s)
+        if converted is not None:
+            return converted
+        m = _NUM_RE.match(s.replace("\xa0", " "))
+        if m:
+            n = _parse_hr_number(m.group(1))
+            if n is not None:
+                return f"{round(n, 6):g}"
     # opci tekst / tip kabela / zastita: bez razmaka, x umjesto ×,
     # tocka umjesto zareza, velika slova, ² -> 2
     s = s.replace("×", "x").replace("²", "2").replace(",", ".")
