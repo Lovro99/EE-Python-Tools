@@ -2,29 +2,21 @@
 setlocal
 title Batch Layouti (DwgLayoutCreator)
 
-REM Batch generiranje AutoCAD layouta preko vise DWG projekata (headless).
-REM Za razliku od ostalih launchera koristi 'python' (ne pythonw) jer alat ima
-REM konzolni live-progress ispis i sazetak; alat zivi u zasebnom DwgLayoutCreator
-REM repou, ne na network shareu.
+REM GUI za batch generiranje AutoCAD layouta (DwgLayoutCreator/batch/batch_gui.py).
+REM Alat zivi u zasebnom DwgLayoutCreator repou (treba lokalni AutoCAD + buildani
+REM LayoutCreatorCore.dll), pa launcher gadja LOKALNI clone tog repoa.
 
 REM === Prilagodi jednom svojoj instalaciji ===
-REM Lokalni clone DwgLayoutCreator repoa (gdje je batch\batch_layouts.py):
 set "REPO=C:\Users\Korisnik\Documents\SOFTWARE\DwgLayoutCreator"
-REM Config s putanjama alata (accoreconsole, DLL, sastavnica) i popisom projekata:
-set "CONFIG=%REPO%\batch\config.json"
 REM ===========================================
 
-if not exist "%REPO%\batch\batch_layouts.py" (
-  echo GRESKA: ne postoji "%REPO%\batch\batch_layouts.py"
+if not exist "%REPO%\batch\batch_gui.py" (
+  echo GRESKA: ne postoji "%REPO%\batch\batch_gui.py"
   echo Ispravi REPO putanju na vrhu ove .bat datoteke.
   echo.
   pause
   exit /b 1
 )
 
-REM %* prosljedjuje dodatne argumente (npr. --dry-run ili --jobs 3).
-python "%REPO%\batch\batch_layouts.py" --config "%CONFIG%" %*
-
-echo.
-echo (zavrseno - pritisni tipku za izlaz)
-pause >nul
+REM pythonw = GUI bez konzolnog prozora; start "" da se .bat odmah zatvori.
+start "" pythonw "%REPO%\batch\batch_gui.py"
