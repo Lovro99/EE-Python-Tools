@@ -85,6 +85,8 @@ se svugdje tretira kao neproziran string. Broj žila je novi koncept.
 | Broj žila | Klasično: isključna 3×1,5 · serijska 4×1,5 · izmjenična 3×1,5 dovod + 4×1,5 između para · križna 4×1,5 obostrano |
 | Topologija | Slijepi ogranak iz najbliže točke trase kruga; MST ide samo kroz RK i svjetiljke |
 | Podaci | Sklopke nemaju atribute — treba proširiti LISP export |
+| Veza SW↔SW | Vodi se kroz strop ili pod → nosi **2× vertikalu sklopke** (gore pa dolje), ne kroz zid |
+| Razdjelne kutije | **Nisu ucrtane** — ogranak se veže projekcijom na najbližu točku trase |
 
 ### 4.1 Korekcija hibridnog pristupa
 
@@ -191,6 +193,20 @@ Za svaku grupu se generira lista logičkih kabela, svaki sa svojim tipom:
 Duljina svakog logičkog kabela = najkraći put u grafu `G`, plus `snap_d`
 na oba kraja, plus vertikale (Faza 5).
 
+**Hvatište ogranka.** Kutije nisu ucrtane, pa se ogranak veže na najbližu
+*točku* trase, a ne na najbliži vrh. To već radi `povezi_blokove`
+(linije 358–387): ako je okomita projekcija na segment bliža od
+najbližeg vrha, `_umetni_virtualni` ubaci čvor na projekciji i podijeli
+brid proporcionalno. Isti mehanizam vrijedi za sklopke — **nema novog
+koda**, samo se primjenjuje na blokove koji nisu terminali MST-a.
+
+**Nuspojava koju treba očekivati.** Svaki takav ogranak stvara novo
+grananje na trasi, a to je fizički mjesto gdje razdjelna kutija *mora*
+postojati da bi izračun vrijedio. Postojeći prijedlog kutija (čvorovi
+stupnja ≥ 3 izvan RK i trošila, linije 589–594) zato će nakon ove
+promjene javljati osjetno veći broj kutija nego danas. To nije greška
+nego posljedica — te kutije ionako ulaze u troškovnik.
+
 **Zbrajanje.** Umjesto jedne `duljina` po krugu, rezultat nosi
 `{tip_kabela: duljina}`. Dedup se radi **unutar** logičkog kabela, nikad
 između njih — dva kabela u istom koridoru su dva kabela.
@@ -204,8 +220,10 @@ Novi parametar **visina sklopke** (zadano 110 cm) uz postojeće u GUI-ju
 - razvod po podu: `v_sklopka = h_sklopka`
 - spušteni strop: `v_sklopka = h_etaza − h_sklopka`
 
-Primjena: dovod = 1× `v_sklopka`; veza SW↔SW = 2× `v_sklopka` (gore pa
-dolje), osim ako se ne uvede opcija "veza se vodi u zidu" gdje otpada.
+Primjena: dovod = 1× `v_sklopka`; veza SW↔SW = **2× `v_sklopka`** (gore pa
+dolje) — potvrđeno da se ta veza vodi kroz strop ili pod, a ne kroz zid
+između doza. Kod spuštenog stropa na 280 cm i sklopke na 110 cm to je
+oko 3,4 m po paru izmjeničnih, prije horizontalne dionice.
 
 ### Faza 5 — Izlaz
 
