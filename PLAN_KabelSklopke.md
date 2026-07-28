@@ -1,7 +1,20 @@
 # Plan: uračunavanje kabela za sklopke rasvjete u Kabelski graf
 
-Status: **prijedlog, prije implementacije.** Odnosi se na
-`crtanjekabel.py` (v3.4) i `AutoLisp/ExportCSVdata.lsp` (v3.1).
+Odnosi se na `crtanjekabel.py` (v3.4) i `AutoLisp/ExportCSVdata.lsp`.
+
+| Faza | Status |
+|---|---|
+| 0 — export sklopki (LISP) | **gotovo** — `ExportCSVdata.lsp` v3.2 |
+| 1 — klasifikacija imena blokova | **gotovo** — `sklopke.py` + dijalog u GUI-ju |
+| 2 — grupiranje sklopki | nije počelo |
+| 3 — proračun ogranaka | nije počelo |
+| 4 — vertikale sklopki | nije počelo |
+| 5 — izlaz po tipu kabela | nije počelo |
+
+**Do Faze 3 sklopke se namjerno ne računaju.** Klasificiraju se i
+prijavljuju, ali se izdvajaju iz ulaza u MST — inače bi kao obični
+terminali dali lošiji rezultat nego prije (vidi §2.1). Brojke su za sada
+identične onima prije Faze 0.
 
 ---
 
