@@ -218,8 +218,8 @@ class PrintOrganizerApp(tk.Tk):
         self._make_range_row(ranges, 'Ploter', self._ploter_range_var, ORANGE, 1)
 
         # ── Tablica ────────────────────────────────────────────────────
-        table_head = tk.Frame(self, bg=BG, padx=pad, pady=(18, 6))
-        table_head.pack(fill='x')
+        table_head = tk.Frame(self, bg=BG, padx=pad)
+        table_head.pack(fill='x', pady=(18, 6))
         self._label(table_head, 'Pregled stranica', size=9, bold=True).pack(side='left')
         tk.Checkbutton(table_head, text='Prikaži svaku stranicu',
                        variable=self._group_var, onvalue=False, offvalue=True,
@@ -261,9 +261,8 @@ class PrintOrganizerApp(tk.Tk):
         status = tk.Frame(self, bg=BG)
         status.pack(fill='x', side='bottom')
         tk.Frame(status, bg=LINE, height=1).pack(fill='x')
-        self._label(status, '', size=8, fg=MUTED).pack()  # razmak
         tk.Label(status, textvariable=self._status_var, font=(FONT, 8), bg=BG,
-                 fg=MUTED, anchor='w', padx=pad, pady=(0, 8)).pack(fill='x')
+                 fg=MUTED, anchor='w', padx=pad).pack(fill='x', pady=(8, 10))
 
     # ------------------------------------------------------------------
     def _make_stat(self, parent, title, subtitle, color, col):
@@ -342,6 +341,7 @@ class PrintOrganizerApp(tk.Tk):
         self._populate_results(pages_info)
 
     def _populate_results(self, pages_info):
+        self._pages_info = pages_info
         kopirka_pages = [i['page'] for i in pages_info if i['kopirka']]
         ploter_pages = [i['page'] for i in pages_info if not i['kopirka']]
 
