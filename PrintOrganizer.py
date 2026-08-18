@@ -122,21 +122,25 @@ def analyze_pdf(pdf_path):
 # ---------------------------------------------------------------------------
 
 BG = '#FFFFFF'          # pozadina
-LINE = '#E5E7EB'        # tanke crte
+LINE = '#E3E6EA'        # tanke crte i rubovi
 TEXT = '#111827'        # osnovni tekst
 MUTED = '#6B7280'       # sporedni tekst
-FIELD = '#F9FAFB'       # polja / zebra retci
+FIELD = '#F7F8FA'       # polja / zebra retci
 BLUE = '#2563EB'        # kopirka
+BLUE_DARK = '#1D4ED8'
 ORANGE = '#EA580C'      # ploter
 FONT = 'Segoe UI'
+MONO = 'Consolas'
 
 
 class PrintOrganizerApp(tk.Tk):
+    PAD = 24
+
     def __init__(self):
         super().__init__()
         self.title('Print Organizer')
-        self.geometry('820x620')
-        self.minsize(700, 480)
+        self.geometry('880x780')
+        self.minsize(720, 520)
         self.configure(bg=BG)
 
         self._pages_info = []
@@ -153,74 +157,105 @@ class PrintOrganizerApp(tk.Tk):
                         font=(FONT, size, 'bold' if bold else 'normal'))
 
     def _button(self, parent, text, command, primary=False):
-        if primary:
-            return tk.Button(parent, text=text, command=command,
-                             font=(FONT, 9, 'bold'), bg=BLUE, fg='white',
-                             activebackground='#1D4ED8', activeforeground='white',
-                             relief='flat', bd=0, padx=14, pady=5, cursor='hand2')
-        return tk.Button(parent, text=text, command=command,
-                         font=(FONT, 9), bg=BG, fg=TEXT,
-                         activebackground=FIELD, activeforeground=TEXT,
-                         highlightbackground=LINE, highlightthickness=1,
-                         relief='flat', bd=0, padx=14, pady=5, cursor='hand2')
+        """Gumb s tankim rubom – vraća okvir koji pozivatelj slaže u raspored."""
+        border = BLUE if primary else LINE
+        wrap = tk.Frame(parent, bg=border, padx=1, pady=1)
+        btn = tk.Button(wrap, text=text, command=command,
+                        font=(FONT, 9, 'bold' if primary else 'normal'),
+                        bg=BLUE if primary else BG,
+                        fg='white' if primary else TEXT,
+                        activebackground=BLUE_DARK if primary else FIELD,
+                        activeforeground='white' if primary else TEXT,
+                        relief='flat', bd=0, highlightthickness=0,
+                        padx=16, pady=6, cursor='hand2')
+        btn.pack(fill='both', expand=True)
 
-    def _separator(self, parent, pady=0):
-        tk.Frame(parent, bg=LINE, height=1).pack(fill='x', pady=pady)
+        hover = BLUE_DARK if primary else FIELD
+        rest = BLUE if primary else BG
+        btn.bind('<Enter>', lambda _e: btn.config(bg=hover))
+        btn.bind('<Leave>', lambda _e: btn.config(bg=rest))
+        return wrap
+
+    def _entry(self, parent, textvariable, mono=False, readonly=False):
+        """Polje s tankim rubom – vraća (okvir, entry)."""
+        wrap = tk.Frame(parent, bg=LINE, padx=1, pady=1)
+        entry = tk.Entry(wrap, textvariable=textvariable,
+                         font=(MONO if mono else FONT, 9),
+                         bg=FIELD, fg=TEXT, insertbackground=TEXT, relief='flat',
+                         state='readonly' if readonly else 'normal',
+                         readonlybackground=FIELD)
+        entry.pack(fill='x', ipady=6, ipadx=8)
+        return wrap, entry
+
+    def _rule(self):
+        tk.Frame(self, bg=LINE, height=1).pack(fill='x')
 
     # ------------------------------------------------------------------
     def _build_ui(self):
-        pad = 22
+        pad = self.PAD
 
         # ── Naslov ─────────────────────────────────────────────────────
-        head = tk.Frame(self, bg=BG, padx=pad, pady=16)
-        head.pack(fill='x')
-        self._label(head, 'Print Organizer', size=15, bold=True).pack(anchor='w')
+        head = tk.Frame(self, bg=BG, padx=pad)
+        head.pack(fill='x', pady=(18, 16))
+        self._label(head, 'Print Organizer', size=16, bold=True).pack(anchor='w')
         self._label(head, 'Razvrstavanje stranica projekta na kopirku i ploter',
-                    size=9, fg=MUTED).pack(anchor='w', pady=(2, 0))
+                    size=9, fg=MUTED).pack(anchor='w', pady=(3, 0))
 
-        self._separator(self)
+        self._rule()
 
         # ── Odabir datoteke ────────────────────────────────────────────
-        file_row = tk.Frame(self, bg=BG, padx=pad, pady=14)
-        file_row.pack(fill='x')
+        file_row = tk.Frame(self, bg=BG, padx=pad)
+        file_row.pack(fill='x', pady=14)
         file_row.columnconfigure(0, weight=1)
 
-        entry_wrap = tk.Frame(file_row, bg=LINE, padx=1, pady=1)
-        entry_wrap.grid(row=0, column=0, sticky='ew', padx=(0, 8))
-        tk.Entry(entry_wrap, textvariable=self._pdf_path, font=(FONT, 9),
-                 relief='flat', bg=FIELD, fg=TEXT, insertbackground=TEXT
-                 ).pack(fill='x', ipady=6, ipadx=6)
+        wrap, self._path_entry = self._entry(file_row, self._pdf_path)
+        wrap.grid(row=0, column=0, sticky='ew', padx=(0, 10))
+        self._path_entry.bind('<Return>', lambda _e: self._analyze())
 
         self._button(file_row, 'Odaberi PDF', self._browse).grid(row=0, column=1)
         self._button(file_row, 'Analiziraj', self._analyze, primary=True
                      ).grid(row=0, column=2, padx=(8, 0))
 
-        self._separator(self)
+        self._rule()
 
         # ── Sažetak ────────────────────────────────────────────────────
-        stats = tk.Frame(self, bg=BG, padx=pad, pady=16)
-        stats.pack(fill='x')
-        stats.columnconfigure(0, weight=1)
-        stats.columnconfigure(1, weight=1)
+        stats = tk.Frame(self, bg=BG, padx=pad)
+        stats.pack(fill='x', pady=(20, 22))
+        for c in range(3):
+            stats.columnconfigure(c, weight=1, uniform='stat')
 
-        self._kopirka_count = self._make_stat(stats, 'Kopirka', 'A4 · A3', BLUE, 0)
-        self._ploter_count = self._make_stat(stats, 'Ploter', 'A2 · A1 · A0 · nestandardni',
-                                             ORANGE, 1)
+        self._total_count = self._make_stat(stats, 'Ukupno', 'stranica u dokumentu',
+                                            TEXT, 0)
+        self._kopirka_count = self._make_stat(stats, 'Kopirka', 'A4 · A3', BLUE, 1)
+        self._ploter_count = self._make_stat(stats, 'Ploter',
+                                             'A2 · A1 · A0 · nestandardni', ORANGE, 2)
 
         # ── Rasponi ────────────────────────────────────────────────────
         ranges = tk.Frame(self, bg=BG, padx=pad)
         ranges.pack(fill='x')
         ranges.columnconfigure(1, weight=1)
 
+        self._label(ranges, 'RASPONI ZA ISPIS', size=8, bold=True, fg=MUTED
+                    ).grid(row=0, column=0, columnspan=3, sticky='w', pady=(0, 8))
+
         self._kopirka_range_var = tk.StringVar(value='–')
         self._ploter_range_var = tk.StringVar(value='–')
-        self._make_range_row(ranges, 'Kopirka', self._kopirka_range_var, BLUE, 0)
-        self._make_range_row(ranges, 'Ploter', self._ploter_range_var, ORANGE, 1)
+        self._make_range_row(ranges, 'Kopirka', self._kopirka_range_var, BLUE, 1)
+        self._make_range_row(ranges, 'Ploter', self._ploter_range_var, ORANGE, 2)
+
+        # ── Statusna traka ─────────────────────────────────────────────
+        self._status_var = tk.StringVar(value='Odaberi PDF datoteku i pritisni Analiziraj.')
+        status = tk.Frame(self, bg=BG)
+        status.pack(fill='x', side='bottom')
+        tk.Frame(status, bg=LINE, height=1).pack(fill='x')
+        tk.Label(status, textvariable=self._status_var, font=(FONT, 8), bg=BG,
+                 fg=MUTED, anchor='w', padx=pad).pack(fill='x', pady=(9, 11))
 
         # ── Tablica ────────────────────────────────────────────────────
         table_head = tk.Frame(self, bg=BG, padx=pad)
-        table_head.pack(fill='x', pady=(18, 6))
-        self._label(table_head, 'Pregled stranica', size=9, bold=True).pack(side='left')
+        table_head.pack(fill='x', pady=(22, 8))
+        self._label(table_head, 'PREGLED STRANICA', size=8, bold=True, fg=MUTED
+                    ).pack(side='left')
         tk.Checkbutton(table_head, text='Prikaži svaku stranicu',
                        variable=self._group_var, onvalue=False, offvalue=True,
                        command=self._refresh_table, font=(FONT, 9),
@@ -231,23 +266,28 @@ class PrintOrganizerApp(tk.Tk):
         table_wrap = tk.Frame(self, bg=LINE, padx=1, pady=1)
         table_wrap.pack(fill='both', expand=True, padx=pad)
 
-        cols = ('stranice', 'format', 'orijentacija', 'ispis')
+        cols = ('stranice', 'format', 'orijentacija', 'ispis', 'broj', 'udio')
         self._tree = ttk.Treeview(table_wrap, columns=cols, show='headings',
                                   selectmode='browse')
-        self._tree.heading('stranice', text='Stranice')
-        self._tree.heading('format', text='Format')
-        self._tree.heading('orijentacija', text='Orijentacija')
-        self._tree.heading('ispis', text='Ispis')
-
-        self._tree.column('stranice', width=140, anchor='w', stretch=False)
-        self._tree.column('format', width=200, anchor='w')
-        self._tree.column('orijentacija', width=120, anchor='w', stretch=False)
-        self._tree.column('ispis', width=100, anchor='w', stretch=False)
+        headings = {
+            'stranice': 'Stranice', 'format': 'Format', 'orijentacija': 'Orijentacija',
+            'ispis': 'Ispis', 'broj': 'Str.', 'udio': '',
+        }
+        widths = {
+            'stranice': 130, 'format': 150, 'orijentacija': 120,
+            'ispis': 100, 'broj': 70, 'udio': 170,
+        }
+        for col in cols:
+            anchor = 'e' if col == 'broj' else 'w'
+            self._tree.heading(col, text=headings[col], anchor=anchor)
+            self._tree.column(col, width=widths[col], anchor=anchor,
+                              stretch=(col == 'udio'), minwidth=50)
 
         self._tree.tag_configure('kopirka', foreground=BLUE, background=BG)
         self._tree.tag_configure('kopirka_alt', foreground=BLUE, background=FIELD)
         self._tree.tag_configure('ploter', foreground=ORANGE, background=BG)
         self._tree.tag_configure('ploter_alt', foreground=ORANGE, background=FIELD)
+        self._tree.tag_configure('prazno', foreground=MUTED, background=BG)
 
         vsb = ttk.Scrollbar(table_wrap, orient='vertical', command=self._tree.yview)
         self._tree.configure(yscrollcommand=vsb.set)
@@ -255,54 +295,45 @@ class PrintOrganizerApp(tk.Tk):
         vsb.pack(side='right', fill='y')
 
         self._apply_style()
+        self._show_placeholder()
 
-        # ── Statusna traka ─────────────────────────────────────────────
-        self._status_var = tk.StringVar(value='Odaberi PDF datoteku i pritisni Analiziraj.')
-        status = tk.Frame(self, bg=BG)
-        status.pack(fill='x', side='bottom')
-        tk.Frame(status, bg=LINE, height=1).pack(fill='x')
-        tk.Label(status, textvariable=self._status_var, font=(FONT, 8), bg=BG,
-                 fg=MUTED, anchor='w', padx=pad).pack(fill='x', pady=(8, 10))
 
     # ------------------------------------------------------------------
     def _make_stat(self, parent, title, subtitle, color, col):
         box = tk.Frame(parent, bg=BG)
-        box.grid(row=0, column=col, sticky='w', padx=(0, 40) if col == 0 else 0)
+        box.grid(row=0, column=col, sticky='w')
 
         self._label(box, title.upper(), size=8, bold=True, fg=MUTED).pack(anchor='w')
-
-        value = tk.Label(box, text='0', font=(FONT, 26), bg=BG, fg=color)
-        value.pack(anchor='w')
-
-        self._label(box, subtitle, size=8, fg=MUTED).pack(anchor='w')
+        value = tk.Label(box, text='–', font=(FONT, 28), bg=BG, fg=color)
+        value.pack(anchor='w', pady=(2, 0))
+        self._label(box, subtitle, size=8, fg=MUTED).pack(anchor='w', pady=(2, 0))
         return value
 
     def _make_range_row(self, parent, label_text, var, color, row):
         tk.Label(parent, text=label_text, font=(FONT, 9), bg=BG, fg=color,
-                 width=8, anchor='w').grid(row=row, column=0, pady=3, sticky='w')
+                 width=9, anchor='w').grid(row=row, column=0, pady=4, sticky='w')
 
-        wrap = tk.Frame(parent, bg=LINE, padx=1, pady=1)
-        wrap.grid(row=row, column=1, sticky='ew', pady=3)
-        tk.Entry(wrap, textvariable=var, font=('Consolas', 9), bg=FIELD, fg=TEXT,
-                 relief='flat', state='readonly', readonlybackground=FIELD
-                 ).pack(fill='x', ipady=5, ipadx=6)
+        wrap, _ = self._entry(parent, var, mono=True, readonly=True)
+        wrap.grid(row=row, column=1, sticky='ew', pady=4)
 
         self._button(parent, 'Kopiraj', lambda v=var: self._copy_to_clipboard(v.get())
-                     ).grid(row=row, column=2, padx=(8, 0), pady=3)
+                     ).grid(row=row, column=2, padx=(10, 0), pady=4)
 
     def _apply_style(self):
         style = ttk.Style()
         style.theme_use('clam')
-        style.configure('Treeview', rowheight=26, font=(FONT, 9),
+        style.configure('Treeview', rowheight=28, font=(FONT, 9),
                         background=BG, fieldbackground=BG, foreground=TEXT,
                         borderwidth=0, relief='flat')
         style.configure('Treeview.Heading', font=(FONT, 8, 'bold'),
-                        background=BG, foreground=MUTED, relief='flat', padding=(6, 8))
+                        background=BG, foreground=MUTED, relief='flat',
+                        padding=(10, 10), borderwidth=0)
         style.map('Treeview.Heading', background=[('active', FIELD)])
-        style.map('Treeview', background=[('selected', '#E5EDFF')],
+        style.map('Treeview', background=[('selected', '#E6EDFD')],
                   foreground=[('selected', TEXT)])
         style.configure('Vertical.TScrollbar', background=FIELD, troughcolor=BG,
-                        bordercolor=BG, arrowcolor=MUTED, relief='flat')
+                        bordercolor=BG, arrowcolor=MUTED, relief='flat', width=12)
+        style.map('Vertical.TScrollbar', background=[('active', '#D1D5DB')])
 
     # ------------------------------------------------------------------
     def _browse(self):
@@ -313,9 +344,10 @@ class PrintOrganizerApp(tk.Tk):
         )
         if path:
             self._pdf_path.set(path)
+            self._path_entry.xview_moveto(1.0)   # prikaži kraj puta (naziv datoteke)
 
     def _analyze(self):
-        path = self._pdf_path.get().strip()
+        path = self._pdf_path.get().strip().strip('"')
         if not path:
             messagebox.showwarning('Nema datoteke', 'Odaberi PDF datoteku.')
             return
@@ -337,7 +369,6 @@ class PrintOrganizerApp(tk.Tk):
             self._status_var.set('Greška pri čitanju PDF-a.')
             return
 
-        self._pages_info = pages_info
         self._populate_results(pages_info)
 
     def _populate_results(self, pages_info):
@@ -347,52 +378,52 @@ class PrintOrganizerApp(tk.Tk):
 
         self._refresh_table()
 
+        self._total_count.config(text=str(len(pages_info)))
         self._kopirka_count.config(text=str(len(kopirka_pages)))
         self._ploter_count.config(text=str(len(ploter_pages)))
 
         self._kopirka_range_var.set(pages_to_range_string(kopirka_pages) or '–')
         self._ploter_range_var.set(pages_to_range_string(ploter_pages) or '–')
 
-        fname = Path(self._pdf_path.get()).name
-        self._status_var.set(
-            f'{fname}  ·  ukupno {len(pages_info)} stranica'
-        )
+        self._status_var.set(f'{Path(self._pdf_path.get()).name}  ·  '
+                             f'{len(group_pages(pages_info))} skupina formata')
+
+    def _show_placeholder(self):
+        self._tree.insert('', 'end', tags=('prazno',), values=(
+            'Odaberi PDF i pritisni Analiziraj', '', '', '', '', ''))
 
     def _refresh_table(self):
         for row in self._tree.get_children():
             self._tree.delete(row)
 
         if not self._pages_info:
+            self._show_placeholder()
             return
 
-        if self._group_var.get():
-            rows = [
-                (
-                    f'{g["start"]}–{g["end"]}' if g['start'] != g['end'] else str(g['start']),
-                    g['size'],
-                    g['orientation'],
-                    'Kopirka' if g['kopirka'] else 'Ploter',
-                    g['kopirka'],
-                    g['count'],
-                )
-                for g in group_pages(self._pages_info)
-            ]
+        grouped = self._group_var.get()
+        if grouped:
+            rows = [(
+                f'{g["start"]}–{g["end"]}' if g['start'] != g['end'] else str(g['start']),
+                g['size'], g['orientation'], g['kopirka'], g['count'],
+            ) for g in group_pages(self._pages_info)]
         else:
-            rows = [
-                (str(i['page']), i['size'], i['orientation'],
-                 'Kopirka' if i['kopirka'] else 'Ploter', i['kopirka'], 1)
-                for i in self._pages_info
-            ]
+            rows = [(str(i['page']), i['size'], i['orientation'], i['kopirka'], 1)
+                    for i in self._pages_info]
 
-        self._tree.heading('stranice', text='Stranice' if self._group_var.get() else 'Stranica')
+        self._tree.heading('stranice', text='Stranice' if grouped else 'Stranica')
+        self._tree.heading('broj', text='Str.' if grouped else '')
 
-        for idx, (pages, size, orientation, device, is_kopirka, count) in enumerate(rows):
-            label = f'{pages}   ({count} str.)' if count > 1 else pages
+        max_count = max(r[4] for r in rows)
+        for idx, (pages, size, orientation, is_kopirka, count) in enumerate(rows):
             tag = 'kopirka' if is_kopirka else 'ploter'
             if idx % 2:
                 tag += '_alt'
-            self._tree.insert('', 'end', values=(label, size, orientation, device),
-                              tags=(tag,))
+            bar = '█' * max(1, round(count / max_count * 14)) if grouped else ''
+            self._tree.insert('', 'end', tags=(tag,), values=(
+                pages, size, orientation,
+                'Kopirka' if is_kopirka else 'Ploter',
+                count if grouped else '', bar,
+            ))
 
     def _copy_to_clipboard(self, text):
         if text and text != '–':
