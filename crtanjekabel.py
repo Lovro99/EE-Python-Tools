@@ -362,8 +362,8 @@ def _polje(row, kljuc):
     """Vrijednost stupca kao string; prazan za prazne ćelije.
 
     `pd.read_csv(dtype=str)` prazno polje daje kao NaN, pa bi `str(...)`
-    vratio doslovno "nan" — a od v3.2 blokovi sklopki nemaju Circuit_Label,
-    pa bi se pojavio fantomski strujni krug imena "nan".
+    vratio doslovno "nan" — a od ExportCSVdata.lsp v3.3 blokovi sklopki
+    nemaju Circuit_Label, pa bi se pojavio fantomski strujni krug "nan".
     """
     v = row.get(kljuc, "")
     if v is None or v != v:          # NaN != NaN

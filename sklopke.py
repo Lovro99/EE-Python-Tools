@@ -168,7 +168,7 @@ class Klasifikator:
         """Klasificiraj jedno ime bloka.
 
         `uloga_csv` / `tip_csv` su natuknice iz CSV-a (stupci Uloga i
-        Tip_Sklopke koje piše ExportCSVdata.lsp v3.2).
+        Tip_Sklopke koje piše ExportCSVdata.lsp v3.3).
 
         `ima_krug` = blok nosi Circuit_Label. Takav blok je po definiciji
         trošilo — do v3.1 su samo takvi i dolazili u CSV. Zato ne završava

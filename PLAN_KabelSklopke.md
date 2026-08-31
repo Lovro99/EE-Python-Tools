@@ -4,7 +4,7 @@ Odnosi se na `crtanjekabel.py` (v3.4) i `AutoLisp/ExportCSVdata.lsp`.
 
 | Faza | Status |
 |---|---|
-| 0 — export sklopki (LISP) | **gotovo** — `ExportCSVdata.lsp` v3.2 |
+| 0 — export sklopki (LISP) | **gotovo** — `ExportCSVdata.lsp` v3.3 |
 | 1 — klasifikacija imena blokova | **gotovo** — `sklopke.py` + dijalog u GUI-ju |
 | 2 — grupiranje sklopki | nije počelo |
 | 3 — proračun ogranaka | nije počelo |
