@@ -17,3 +17,6 @@ dwg_props_helper/obj/
 
 # Claude Code
 .claude/settings.local.json
+
+# Naucena mapa imena blokova (Kabelski graf) - lokalna, po korisniku/projektu
+sklopke_config.json
