@@ -177,36 +177,58 @@ def write_kv_value(ws, r, value, unit):
 
 
 # ── Lista stringova ─────────────────────────────────────────────────────────
+def inv_number(inv):
+    """PVSOL 'Number' invertera kao broj; nepostojeci/nenumericki -> 0."""
+    n = inv.get("Number")
+    return n if isinstance(n, (int, float)) and not isinstance(n, bool) else 0
+
+
+def iter_inverters(data):
+    """Svi inverteri iz konfiguracije, globalno sortirani po PVSOL 'Number'.
+
+    PVSOL numerira invertere kroz sva modulna polja zajedno, a grupe u JSON-u
+    nisu nuzno poredane po tom broju. Sortiranje samo unutar grupe zato moze
+    dati IN numeraciju koja ne prati redoslijed iz PVSOL izvjestaja. Sort je
+    stabilan, pa inverteri s istim (ili nedostajucim) brojem zadrzavaju
+    redoslijed iz JSON-a. Vraca listu parova (grupa, inverter).
+    """
+    pairs = [(grp, inv)
+             for grp in g(data, "ProjectOverview", "Configuration",
+                          "ModuleAreas", default=[])
+             for inv in grp.get("Inverters", [])]
+    return sorted(pairs, key=lambda p: inv_number(p[1]))
+
+
 def build_string_rows(data):
     """Razvija PVSOL konfiguraciju u popis pojedinacnih stringova.
 
     Svaki fizicki inverter (uz uvazavanje kolicine) dobiva jedinstveni
-    sekvencijalni broj. Vraca listu dict-ova sa kljucevima iz STRING_COLUMNS.
+    sekvencijalni broj. PVSOL-ov 'Number' se namjerno ne prenosi u oznaku —
+    on je trajni ID zapisa i ostavlja rupe kad se inverter obrise ili
+    prerasporedi (npr. 1..15 za 12 stvarnih invertera) — ali odreduje
+    redoslijed, pa IN1..INn prati numeraciju iz PVSOL izvjestaja.
+    Vraca listu dict-ova sa kljucevima iz STRING_COLUMNS.
     """
-    groups = g(data, "ProjectOverview", "Configuration", "ModuleAreas", default=[])
     rows = []
     phys = 0
-    for grp in groups:
-        inverters = sorted(grp.get("Inverters", []),
-                           key=lambda x: x.get("Number", 0))
-        for inv in inverters:
-            qty = int(as_num(g(inv, "Quantity", "Value")) or 1)
-            model = inv.get("Description", "")
-            strings = parse_inverter_strings(inv.get("Configuration"))
-            for _ in range(qty):
-                phys += 1
-                s_per_mppt = {}
-                for mppt, panels in strings:
-                    s = s_per_mppt.get(mppt, 0) + 1
-                    s_per_mppt[mppt] = s
-                    rows.append({
-                        "token": f"IN{phys}-M{mppt}-S{s}-{panels}",
-                        "inverter": phys,
-                        "model": model,
-                        "mpp": mppt,
-                        "string": s,
-                        "panels": panels,
-                    })
+    for _grp, inv in iter_inverters(data):
+        qty = int(as_num(g(inv, "Quantity", "Value")) or 1)
+        model = inv.get("Description", "")
+        strings = parse_inverter_strings(inv.get("Configuration"))
+        for _ in range(qty):
+            phys += 1
+            s_per_mppt = {}
+            for mppt, panels in strings:
+                s = s_per_mppt.get(mppt, 0) + 1
+                s_per_mppt[mppt] = s
+                rows.append({
+                    "token": f"IN{phys}-M{mppt}-S{s}-{panels}",
+                    "inverter": phys,
+                    "model": model,
+                    "mpp": mppt,
+                    "string": s,
+                    "panels": panels,
+                })
     return rows
 
 
@@ -239,8 +261,8 @@ def build_podaci(data):
     pv = g(sim, "PvSystem", default={})
     sss = g(sim, "LevelOfSelfSufficiency", default={})
     areas = g(td, "ModuleAreas", default=[])
-    inverters = [inv for grp in g(cfg, "ModuleAreas", default=[])
-                 for inv in grp.get("Inverters", [])]
+    # Isti redoslijed kao build_string_rows -> inverters[0] je bas IN1.
+    inverters = [inv for _grp, inv in iter_inverters(data)]
 
     dc = as_num(g(td, "TotalPower", "Value"))
     ac = as_num(g(cfg, "TotalPower", "Value"))
