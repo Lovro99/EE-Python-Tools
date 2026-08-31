@@ -11,6 +11,8 @@ EE-Python-Tools/
 ├── launchers/           # .bat pokretači za svaki alat
 ├── mcp_autocad/         # MCP server – Claude <-> AutoCAD integracija via COM
 ├── dwg_props_helper/    # C# helper za čitanje AutoCAD DWG atributa
+├── launcher.py          # EE Alati – centralni launcher (tkinter)
+├── tools.json           # Popis alata s opisima i uputama za launcher
 ├── deploy.ps1           # Deploy skriptu – kopira alate na server
 ├── web_app.py           # Streamlit ulazna točka (multi-page)
 ├── syncProperties.py    # Sinkronizacija DWG properties između crteža
@@ -28,7 +30,42 @@ EE-Python-Tools/
 
 ## Pokretanje
 
-Svaki alat ima `.bat` launcher u `launchers/` koji aktivira venv i pokreće skriptu.
+### EE Alati — centralni launcher
+
+Jedno mjesto za sve alate: popis s imenom, kratkim opisom i kategorijama.
+Kad zadržiš miš iznad retka ~1 s, tooltip prikaže duži opis i upute za
+korištenje. Alat se pokreće dvoklikom, Enterom ili gumbom **Pokreni**.
+
+```bash
+pythonw launcher.py
+```
+
+ili preko `launchers/EE Alati.bat` — tu .bat (ili prečac na nju) pinnaj na
+toolbar/taskbar pa je cijeli popis alata na jednom kliku.
+
+Popis alata, opisi i upute uređuju se u **`tools.json`** (bez diranja koda).
+Novi alat = novi unos u `tools.json`:
+
+```json
+{
+  "ime": "Moj Alat",
+  "skripta": "mojAlat.py",
+  "kategorija": "Excel / Word",
+  "opis": "Kratki opis u popisu",
+  "dugi_opis": "Duži opis u tooltipu na hover",
+  "upute": "1. Prvi korak\n2. Drugi korak",
+  "ikona": "🔧",
+  "konzola": false
+}
+```
+
+Polje `"konzola": true` postavi za alate koji trebaju konzolni prozor
+(`input()`/`print`); umjesto `"skripta"` može ići `"modul"` (npr.
+`"ormari.app"`).
+
+### Pojedinačni launcheri
+
+Svaki alat ima i `.bat` launcher u `launchers/` koji aktivira venv i pokreće skriptu.
 
 ### Web app (Streamlit)
 ```bash
