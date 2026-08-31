@@ -49,6 +49,9 @@ import tkinter as tk
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 
+import sklopke
+from sklopke import Klasifikator
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -355,6 +358,19 @@ def _umetni_virtualni(G, cvorovi, u, v, t):
     return w
 
 
+def _polje(row, kljuc):
+    """Vrijednost stupca kao string; prazan za prazne ćelije.
+
+    `pd.read_csv(dtype=str)` prazno polje daje kao NaN, pa bi `str(...)`
+    vratio doslovno "nan" — a od ExportCSVdata.lsp v3.3 blokovi sklopki
+    nemaju Circuit_Label, pa bi se pojavio fantomski strujni krug "nan".
+    """
+    v = row.get(kljuc, "")
+    if v is None or v != v:          # NaN != NaN
+        return ""
+    return str(v).strip()
+
+
 def povezi_blokove(G, cvorovi, blokovi):
     """Spoji svaki blok na najbližu TOČKU trase: ako je okomita
     projekcija na neki segment bliža od najbližeg vrha, umeće se
@@ -376,13 +392,13 @@ def povezi_blokove(G, cvorovi, blokovi):
             d   = best[0]
 
         veze.append({
-            "label":      str(row.get("Circuit_Label", "")),
+            "label":      _polje(row, "Circuit_Label"),
             "blok_xy":    (bx, by),
             "cvor_idx":   idx,
             "snap_d":     d,
-            "handle":     str(row.get("Handle",     "")),
-            "tip":        str(row.get("Tip_Kabela", "")),
-            "block_name": str(row.get("Block_Name", "")),
+            "handle":     _polje(row, "Handle"),
+            "tip":        _polje(row, "Tip_Kabela"),
+            "block_name": _polje(row, "Block_Name"),
         })
     return veze
 
@@ -985,6 +1001,96 @@ def nacrtaj(ax, G, cvorovi, kabeli_raw, blokovi, veze,
 #  APLIKACIJA  (CustomTkinter)
 # ══════════════════════════════════════════════════════════════
 
+class DijalogUloge(ctk.CTkToplevel):
+    """Pita korisnika za ulogu svakog neprepoznatog imena bloka.
+
+    Imena blokova nisu poznata kodu (žive u vanjskoj DWG biblioteci), pa
+    se uče ovdje i pamte u `sklopke_config.json` — sljedeći put je crtež
+    prepoznat sam.
+
+    Zadana uloga je TROSILO: tko samo klikne Spremi dobiva isto ponašanje
+    kao i dosad (blok je terminal MST-a), bez tihe promjene rezultata.
+    """
+
+    def __init__(self, parent, klasifikator, imena):
+        super().__init__(parent)
+        self.title("Nepoznati blokovi – dodijeli ulogu")
+        self.geometry("660x540")
+        self.klas    = klasifikator
+        self._redovi = []
+        self.spremljeno = False
+
+        ctk.CTkLabel(
+            self, justify="left", anchor="w",
+            text=("Ova imena blokova alat ne prepoznaje.\n"
+                  "Dodijeli im ulogu — odluka se pamti za sljedeći put."),
+        ).pack(fill="x", padx=14, pady=(14, 4))
+
+        ctk.CTkLabel(
+            self, justify="left", anchor="w", text_color="#90A4AE",
+            text=("SVJETILJKA = rasvjetno tijelo (meta sklopke)   •   "
+                  "TROSILO = ostalo trošilo   •   SKLOPKA = zidna sklopka"),
+        ).pack(fill="x", padx=14, pady=(0, 8))
+
+        okvir = ctk.CTkScrollableFrame(self)
+        okvir.pack(fill="both", expand=True, padx=14, pady=4)
+
+        for r, ime in enumerate(imena):
+            ctk.CTkLabel(okvir, text=ime, anchor="w").grid(
+                row=r, column=0, sticky="w", padx=(4, 10), pady=3)
+
+            v_uloga = ctk.StringVar(value=sklopke.ULOGA_TROSILO)
+            v_tip   = ctk.StringVar(value=sklopke.TIP_ISKLJUCNA)
+
+            m_tip = ctk.CTkOptionMenu(
+                okvir, values=list(sklopke.TIPOVI_SKLOPKI),
+                variable=v_tip, width=150, state="disabled")
+
+            m_uloga = ctk.CTkOptionMenu(
+                okvir, values=list(sklopke.ULOGE), variable=v_uloga, width=150,
+                command=lambda _v, mt=m_tip: mt.configure(
+                    state="normal" if _v == sklopke.ULOGA_SKLOPKA
+                    else "disabled"))
+
+            m_uloga.grid(row=r, column=1, padx=4, pady=3)
+            m_tip.grid(row=r, column=2, padx=4, pady=3)
+            okvir.grid_columnconfigure(0, weight=1)
+
+            self._redovi.append((ime, v_uloga, v_tip))
+
+        gumbi = ctk.CTkFrame(self, fg_color="transparent")
+        gumbi.pack(fill="x", padx=14, pady=(4, 14))
+        ctk.CTkButton(gumbi, text="Spremi", width=120,
+                      command=self._spremi).pack(side="right", padx=4)
+        ctk.CTkButton(gumbi, text="Odustani", width=120, fg_color="#455A64",
+                      command=self.destroy).pack(side="right", padx=4)
+
+        self.transient(parent)
+        # grab_set tek kad je prozor stvarno vidljiv (CTkToplevel zna
+        # biti mapiran s odgodom, inače baca TclError)
+        self.after(120, self._grabi)
+
+    def _grabi(self):
+        try:
+            self.grab_set()
+        except tk.TclError:
+            pass
+
+    def _spremi(self):
+        for ime, v_uloga, v_tip in self._redovi:
+            uloga = v_uloga.get()
+            tip   = v_tip.get() if uloga == sklopke.ULOGA_SKLOPKA else None
+            self.klas.zapamti(ime, uloga, tip)
+        try:
+            self.klas.snimi()
+        except OSError as e:
+            messagebox.showwarning(
+                "Nije spremljeno",
+                f"Uloge su primijenjene, ali konfiguracija nije spremljena:\n{e}")
+        self.spremljeno = True
+        self.destroy()
+
+
 class KabelskiApp(ctk.CTk):
 
     def __init__(self):
@@ -1006,6 +1112,11 @@ class KabelskiApp(ctk.CTk):
         self._highlighted  = None
         self._zp           = None
         self._circuit_btns = []
+
+        # Klasifikacija blokova (Faza 1) – naučena mapa imena blokova
+        self._klas          = Klasifikator()
+        self.klasifikacije  = {}
+        self.veze_sklopke   = []
 
         # Tkinter varijable
         self._kp      = ctk.StringVar()
@@ -1355,6 +1466,57 @@ class KabelskiApp(ctk.CTk):
 
     # ── ANALIZA ─────────────────────────────────────────────────
 
+    # ── KLASIFIKACIJA BLOKOVA (Faza 1) ──────────────────────────
+
+    def _klasificiraj(self):
+        """Klasificiraj imena blokova; za neprepoznata pitaj korisnika.
+
+        Imena blokova rasvjete i sklopki nisu poznata kodu — žive u
+        vanjskoj DWG biblioteci — pa se uče iz crteža i pamte.
+        """
+        parovi = sklopke.iz_dataframea(self.blokovi)
+        self.klasifikacije = self._klas.klasificiraj_sve(parovi)
+
+        nepoznati = Klasifikator.nepoznati(self.klasifikacije)
+        if nepoznati:
+            dlg = DijalogUloge(self, self._klas, nepoznati)
+            self.wait_window(dlg)
+            if dlg.spremljeno:
+                self.klasifikacije = self._klas.klasificiraj_sve(parovi)
+
+    def _razdvoji_sklopke(self, veze):
+        """Izdvoji sklopke iz veza koje ulaze u proračun.
+
+        Do Faze 3 sklopke se namjerno NE računaju. Kad bi ušle u MST kao
+        obični terminali, lanac bi mogao ići svjetlo→sklopka→svjetlo, što
+        fizički ne postoji — rezultat bi bio lošiji nego prije nego što su
+        sklopke uopće dolazile u CSV. Zato se ovdje izdvajaju i samo
+        prijavljuju u info panelu.
+        """
+        ostale, skl = [], []
+        for v in veze:
+            k = self.klasifikacije.get(
+                sklopke.normaliziraj(v.get("block_name", "")))
+            (skl if (k and k.je_sklopka) else ostale).append(v)
+        return ostale, skl
+
+    def _info_blokovi(self):
+        """Retci izvještaja o klasifikaciji blokova."""
+        if not self.klasifikacije:
+            return []
+        br  = sklopke.sazetak(self.klasifikacije)
+        red = ["\n=== BLOKOVI (klasifikacija) ===",
+               "  " + " | ".join(f"{u}: {n}" for u, n in sorted(br.items()))]
+        if self.veze_sklopke:
+            red.append(f"\n⚠  {len(self.veze_sklopke)} sklopki nije u "
+                       f"proračunu — kabel do sklopke računa Faza 3.")
+            pretp = sorted({k.ime for k in self.klasifikacije.values()
+                            if k.je_sklopka and k.tip_pretpostavljen})
+            if pretp:
+                red.append("  Tip pretpostavljen (ISKLJUCNA), provjeri: "
+                           + ", ".join(pretp))
+        return red
+
     def _analiziraj(self):
         kp = self._kp.get()
         if not kp:
@@ -1375,11 +1537,15 @@ class KabelskiApp(ctk.CTk):
             self._status("Greška: nema valjanih kabela!", "#EF5350")
             return
 
+        # ── Faza 1: klasifikacija imena blokova ──────────────────
+        self._klasificiraj()
+
         self._status(f"Gradim graf (tol={tol:.0f})...", "#64B5F6")
         self.G, self.cvorovi = izgradi_graf(self.kabeli, self.hmap, tol)
 
         self._status("Spajam blokove...", "#64B5F6")
         self.veze = povezi_blokove(self.G, self.cvorovi, self.blokovi)
+        self.veze, self.veze_sklopke = self._razdvoji_sklopke(self.veze)
 
         rk_v = next((v for v in self.veze if v["label"] == rk), None)
         if not rk_v:
@@ -1441,8 +1607,10 @@ class KabelskiApp(ctk.CTk):
                             f"{len(kutije_sve)} (romb na grafu)")
                 info.append("  Grananje izvan trošila — bez kutije na tom"
                             " mjestu kabel mora ići lančano (dulje).")
-        self._set_info("\n".join(info),
-                       "#EF9A9A" if (otoci or n_err) else "#A5D6A7")
+        info.extend(self._info_blokovi())
+        self._set_info(
+            "\n".join(info),
+            "#EF9A9A" if (otoci or n_err or self.veze_sklopke) else "#A5D6A7")
 
         self._highlighted = None
         self._popuni_listu()

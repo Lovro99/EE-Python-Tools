@@ -1,0 +1,74 @@
+# QC konfiguracija za FNE projekte (fotonaponska elektrana).
+#
+# Ovdje se podaci NE spajaju po oznaci opreme nego po nazivu polja
+# (key-value): Excel list "Podaci" (A=naziv, B=vrijednost) <-> Word
+# custom properties <-> DWG title-block polja. Zajednicki jezik je
+# rjecnik 'polja' ispod: kanonsko ime + aliasi kako se pise u svakom
+# izvoru + tip (broj/tekst za ispravnu usporedbu brojeva).
+
+predlosci:
+
+  - ime: podaci_kv
+    tip: excel_kv
+    datoteka: "*podat*.xls*"      # podatci_*.xlsm
+    list: "Podaci"
+    kolona_naziv: A
+    kolona_vrijednost: B
+
+  - ime: opis_kv
+    tip: word_kv
+    datoteka: "*.doc?"            # .docx / .docm
+
+  # DWG ide preko CSV/field exporta iz AutoCAD-a (SetFieldsValue.lsp).
+  # Otkomentiraj kad imas export title-block polja u CSV (naziv;vrijednost):
+  # - ime: dwg_polja
+  #   tip: dwg_csv
+  #   datoteka: "*dwg*polja*.csv"
+  #   separator: ";"
+  #   kolone: { NAZIV: oznaka, VRIJEDNOST: ... }   # (za KV title-block treba mala prilagodba)
+
+# ── Rjecnik polja ────────────────────────────────────────────────────
+# ime    = kanonsko ime (interno)
+# tip    = broj | tekst  (broj: "4.000,00" == "4000" == "4,0 kW*1000")
+# aliasi = kako se polje zove u Excelu / Wordu / DWG-u (case+razmaci se
+#          normaliziraju, pa "Model  invertera" s duplim razmakom padne
+#          na isto polje kao "Model invertera")
+polja:
+  # — investitor / projekt —
+  - { ime: oib_investitora, tip: tekst, aliasi: ["OIB investitora"] }
+  - { ime: zop, tip: tekst, aliasi: ["ZOP"] }
+  - { ime: bp, tip: tekst, aliasi: ["BP"] }
+  - { ime: broj_omm, tip: tekst, aliasi: ["Broj OMM"] }
+
+  # — paneli —
+  - { ime: proizvodjac_panela, tip: tekst, aliasi: ["Proizvođač panela", "Proizođač panela"] }
+  - { ime: model_panela, tip: tekst, aliasi: ["Model panela"] }
+  - { ime: snaga_panela_wp, tip: broj, aliasi: ["Snaga panela"] }
+  - { ime: broj_panela, tip: broj, aliasi: ["Broj panela"] }
+  - { ime: efikasnost_panela_pct, tip: broj, aliasi: ["Efikasnost panela"] }
+
+  # — inverter —
+  - { ime: proizvodjac_invertera, tip: tekst, aliasi: ["Proizvođač invertera", "Proizođač invertera"] }
+  - { ime: model_invertera, tip: tekst, aliasi: ["Model invertera"] }
+  - { ime: broj_invertera, tip: broj, aliasi: ["Broj invertera"] }
+  - { ime: nazivna_snaga_invertera_w, tip: broj, aliasi: ["Nazivna snaga invertera"] }
+  - { ime: prekidac_invertera_a, tip: broj, aliasi: ["Prekidač invertera"] }
+  - { ime: izlazna_struja_invertera_a, tip: broj, aliasi: ["Izlazna struja invertera"] }
+
+  # — snage elektrane —
+  - { ime: zakupljena_snaga_kw, tip: broj, aliasi: ["Zakupljena snaga"] }
+  - { ime: dc_snaga_elektrane_kw, tip: broj, aliasi: ["DC snaga elektrane"] }
+  - { ime: ac_snaga_elektrane_kw, tip: broj, aliasi: ["AC snaga elektrane"] }
+  - { ime: snaga_invertera_kw, tip: broj, aliasi: ["snaga invertera"] }
+
+  # — kabeli / zastita —
+  - { ime: kabel_rose_gro, tip: tekst, aliasi: ["Kabel od RO-SE do GRO"] }
+  - { ime: glavni_prekidac_rose_a, tip: broj, aliasi: ["Glavni prekidač RO-SE"] }
+  - { ime: presjek_dc_kabela_mm2, tip: broj, aliasi: ["Presjek DC kabela"] }
+  - { ime: sustav_zastite, tip: tekst, aliasi: ["Sustav zaštite"] }
+  - { ime: vrsta_prikljucka, tip: tekst, aliasi: ["Vrsta priključka"] }
+
+  # — proizvodnja / bilanca —
+  - { ime: godisnja_proizvodnja_kwh, tip: broj, aliasi: ["Godišnja proizvodnja FNE"] }
+  - { ime: godisnja_potrosnja_kwh, tip: broj, aliasi: ["Godišnja potrošnja objekta"] }
+  - { ime: predaja_u_mrezu_kwh, tip: broj, aliasi: ["Predaja u el. mrežu"] }
