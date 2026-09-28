@@ -3,6 +3,7 @@ PrintOrganizer.py - Organizator ispisa projekata
 Analizira PDF i razvrstava stranice: kopirka (A4/A3) vs ploter (A2/A1/A0/nestandardni)
 """
 
+import json
 import os
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
@@ -33,6 +34,27 @@ STANDARD_SIZES = {
 }
 
 KOPIRKA_FORMATS = {'A4', 'A3'}
+
+# Pamti zadnju datoteku i zadanu mapu između pokretanja
+CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           'printorganizer_config.json')
+
+
+def load_config():
+    try:
+        with open(CONFIG_PATH, encoding='utf-8') as f:
+            cfg = json.load(f)
+        return cfg if isinstance(cfg, dict) else {}
+    except (OSError, ValueError):
+        return {}           # nema ili oštećena konfiguracija – kreni od nule
+
+
+def save_config(cfg):
+    try:
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+            json.dump(cfg, f, ensure_ascii=False, indent=2)
+    except OSError:
+        pass                # nemogućnost snimanja ne smije srušiti alat
 
 
 def mm_to_pt(mm):
@@ -146,8 +168,19 @@ class PrintOrganizerApp(tk.Tk):
         self._pages_info = []
         self._pdf_path = tk.StringVar()
         self._group_var = tk.BooleanVar(value=True)
+        self._config = load_config()
+        self._analyzed_path = None   # PDF čiji su rezultati trenutno prikazani
 
         self._build_ui()
+
+        last = self._config.get('zadnja_datoteka', '')
+        if last and os.path.isfile(last):
+            self._pdf_path.set(last)
+            self._path_entry.xview_moveto(1.0)
+            self._status_var.set('Učitana zadnja datoteka – pritisni Analiziraj.')
+
+        self._pdf_path.trace_add('write', lambda *_: self._update_stale_warning())
+        self.protocol('WM_DELETE_WINDOW', self._on_close)
 
     # ------------------------------------------------------------------
     # Male pomoćne komponente
@@ -215,6 +248,27 @@ class PrintOrganizerApp(tk.Tk):
         self._button(file_row, 'Odaberi PDF', self._browse).grid(row=0, column=1)
         self._button(file_row, 'Analiziraj', self._analyze, primary=True
                      ).grid(row=0, column=2, padx=(8, 0))
+
+        self._default_dir_var = tk.StringVar()
+        dir_row = tk.Frame(file_row, bg=BG)
+        dir_row.grid(row=1, column=0, columnspan=3, sticky='ew', pady=(8, 0))
+        tk.Label(dir_row, textvariable=self._default_dir_var, font=(FONT, 8),
+                 bg=BG, fg=MUTED, anchor='w').pack(side='left', fill='x', expand=True)
+        for text, cmd in (('Ukloni', self._clear_default_dir),
+                          ('Zadana mapa…', self._choose_default_dir)):
+            tk.Button(dir_row, text=text, command=cmd, font=(FONT, 8, 'underline'),
+                      bg=BG, fg=BLUE, activebackground=BG, activeforeground=BLUE_DARK,
+                      relief='flat', bd=0, highlightthickness=0, padx=4,
+                      cursor='hand2').pack(side='right')
+        self._update_default_dir_label()
+
+        self._stale_label = tk.Label(
+            file_row, font=(FONT, 9, 'bold'), bg='#FFF7ED', fg=ORANGE,
+            anchor='w', padx=10, pady=6,
+            text='⚠  Odabran je novi PDF – prikazani podaci su od prethodne '
+                 'datoteke. Pritisni Analiziraj.')
+        self._stale_label.grid(row=2, column=0, columnspan=3, sticky='ew', pady=(8, 0))
+        self._stale_label.grid_remove()
 
         self._rule()
 
@@ -336,15 +390,64 @@ class PrintOrganizerApp(tk.Tk):
         style.map('Vertical.TScrollbar', background=[('active', '#D1D5DB')])
 
     # ------------------------------------------------------------------
+    def _initial_dir(self):
+        """Zadana mapa → mapa zadnje datoteke → Desktop."""
+        last = self._pdf_path.get().strip().strip('"')
+        for d in (self._config.get('zadana_mapa', ''),
+                  os.path.dirname(last) if last else ''):
+            if d and os.path.isdir(d):
+                return d
+        return str(Path.home() / 'Desktop')
+
+    def _update_default_dir_label(self):
+        d = self._config.get('zadana_mapa', '')
+        self._default_dir_var.set(f'Zadana mapa: {d}' if d
+                                  else 'Zadana mapa: nije postavljena')
+
+    def _choose_default_dir(self):
+        d = filedialog.askdirectory(title='Odaberi zadanu mapu za PDF-ove',
+                                    initialdir=self._initial_dir())
+        if d:
+            self._config['zadana_mapa'] = os.path.normpath(d)
+            save_config(self._config)
+            self._update_default_dir_label()
+
+    def _clear_default_dir(self):
+        if self._config.pop('zadana_mapa', None) is not None:
+            save_config(self._config)
+        self._update_default_dir_label()
+
+    def _update_stale_warning(self):
+        """Prikaži upozorenje ako rezultati nisu od PDF-a upisanog u polje."""
+        current = self._pdf_path.get().strip().strip('"')
+        stale = (self._analyzed_path is not None and
+                 os.path.normcase(os.path.normpath(current)) !=
+                 os.path.normcase(os.path.normpath(self._analyzed_path)))
+        if stale:
+            self._stale_label.grid()
+        else:
+            self._stale_label.grid_remove()
+
+    def _remember_file(self, path):
+        self._config['zadnja_datoteka'] = os.path.normpath(path)
+        save_config(self._config)
+
+    def _on_close(self):
+        path = self._pdf_path.get().strip().strip('"')
+        if path and os.path.isfile(path):
+            self._remember_file(path)
+        self.destroy()
+
     def _browse(self):
         path = filedialog.askopenfilename(
             title='Odaberi PDF datoteku projekta',
             filetypes=[('PDF datoteke', '*.pdf'), ('Sve datoteke', '*.*')],
-            initialdir=str(Path.home() / 'Desktop'),
+            initialdir=self._initial_dir(),
         )
         if path:
             self._pdf_path.set(path)
             self._path_entry.xview_moveto(1.0)   # prikaži kraj puta (naziv datoteke)
+            self._remember_file(path)
 
     def _analyze(self):
         path = self._pdf_path.get().strip().strip('"')
@@ -369,7 +472,10 @@ class PrintOrganizerApp(tk.Tk):
             self._status_var.set('Greška pri čitanju PDF-a.')
             return
 
+        self._remember_file(path)
+        self._analyzed_path = path
         self._populate_results(pages_info)
+        self._update_stale_warning()
 
     def _populate_results(self, pages_info):
         self._pages_info = pages_info
