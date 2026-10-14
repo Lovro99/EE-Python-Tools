@@ -878,7 +878,7 @@ class SyncApp(ctk.CTk):
         except Exception as exc:
             self._set_status(f"Greška: {exc}")
             log(f"KRITIČNA GREŠKA: {exc}", "error")
-            self._ui(lambda: messagebox.showerror("Greška", str(exc)))
+            self._ui(lambda e=str(exc): messagebox.showerror("Greška", e))
         finally:
             self._syncing = False
             self._ui(lambda: self._top_bar.set(0))
