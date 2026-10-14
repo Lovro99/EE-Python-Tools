@@ -98,10 +98,6 @@ Sve je u **`tools.json`** (bez diranja launchera):
   `root.title(naslov("Moj Alat"))`.
 - Novi Python paket → dodaj ga u `requirements.txt`.
 
-### Web app (Streamlit)
-
-`web_app.py` + `pages/` nisu dio launchera; pokretanje: `streamlit run web_app.py`.
-
 ## mcp_autocad
 
 MCP server koji spaja Claude Code s AutoCAD-om putem COM sučelja (`pywin32`).  
