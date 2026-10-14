@@ -10,6 +10,7 @@ import re
 import io
 import zipfile
 from docx import Document
+from ee_verzija import naslov
 
 class DocxIndexer:
     def __init__(self):
@@ -166,7 +167,7 @@ class SearchApp:
     def __init__(self, indexer):
         self.indexer = indexer
         self.root = tk.Tk()
-        self.root.title("🔍 DOCX/DOCM Pretraživač v3.4")
+        self.root.title(naslov("🔍 DOCX/DOCM Pretraživač"))
         self.root.geometry("1100x800")
         self.setup_ui()
     

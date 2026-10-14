@@ -3,6 +3,7 @@
     {
       "ime": "Crtanje Kabela",
       "skripta": "crtanjekabel.py",
+      "verzija": "3.4",
       "kategorija": "AutoCAD / DWG",
       "ikona": "🔌",
       "opis": "Kabelski graf: AutoCAD CSV → trase i duljine kabela",
@@ -12,6 +13,7 @@
     {
       "ime": "Sync Properties",
       "skripta": "syncProperties.py",
+      "verzija": "1.0",
       "kategorija": "AutoCAD / DWG",
       "ikona": "🔄",
       "opis": "Excel → Word/DWG sinkronizacija custom propertija",
@@ -21,6 +23,7 @@
     {
       "ime": "Sync DWG Fast",
       "skripta": "syncDwgFast.py",
+      "verzija": "1.0",
       "kategorija": "AutoCAD / DWG",
       "ikona": "⚡",
       "opis": "Brzi upis Excel podataka u DWG — bez AutoCAD-a",
@@ -30,6 +33,7 @@
     {
       "ime": "Razvodne Ploče",
       "modul": "ormari.app",
+      "verzija": "1.0",
       "kategorija": "Razvodni ormari i kabeli",
       "ikona": "🗄️",
       "opis": "Kalkulator i shema razvodnih ormara",
@@ -39,6 +43,7 @@
     {
       "ime": "Duljina Kabela",
       "skripta": "CabelLength.py",
+      "verzija": "1.0",
       "kategorija": "Razvodni ormari i kabeli",
       "ikona": "📏",
       "opis": "Proračun i vizualizacija duljina kabela u razvodnoj mreži",
@@ -48,6 +53,7 @@
     {
       "ime": "Excel u Word",
       "skripta": "excelToWord.py",
+      "verzija": "1.0",
       "kategorija": "Excel / Word",
       "ikona": "📄",
       "opis": "Upis Excel 'Podaci' u custom properties Word dokumenta",
@@ -57,6 +63,7 @@
     {
       "ime": "Pretraga Word",
       "skripta": "search.py",
+      "verzija": "3.4",
       "kategorija": "Excel / Word",
       "ikona": "🔍",
       "opis": "Indeksirana pretraga sadržaja .docx/.docm dokumenata",
@@ -66,6 +73,7 @@
     {
       "ime": "Scrape Excel",
       "skripta": "scrape_Excel.py",
+      "verzija": "1.0",
       "kategorija": "Excel / Word",
       "ikona": "📊",
       "opis": "Skupi ključne podatke iz svih .xlsm u mapi → CSV",
@@ -75,6 +83,7 @@
     {
       "ime": "Scrape Excel Podaci",
       "skripta": "scrapeExcelPodaci.py",
+      "verzija": "1.0",
       "kategorija": "Excel / Word",
       "ikona": "📈",
       "opis": "Ekstraktor podataka o panelima iz .xlsm datoteka → CSV",
@@ -84,6 +93,7 @@
     {
       "ime": "Scrape Word",
       "skripta": "scrape_word.py",
+      "verzija": "1.0",
       "kategorija": "Excel / Word",
       "ikona": "📝",
       "opis": "Skupi custom properties iz svih .docx/.docm u mapi → CSV",
@@ -93,6 +103,7 @@
     {
       "ime": "Excel Terminal",
       "skripta": "Excel to terminal.py",
+      "verzija": "1.0",
       "kategorija": "Excel / Word",
       "ikona": "⌨️",
       "konzola": true,
@@ -103,6 +114,7 @@
     {
       "ime": "PVSOL u Excel",
       "skripta": "pvsolToExcel.py",
+      "verzija": "1.0",
       "kategorija": "Excel / Word",
       "ikona": "☀️",
       "opis": "PVSOL JSON export → formatirani Excel + lista stringova",
@@ -112,6 +124,7 @@
     {
       "ime": "Print Organizer",
       "skripta": "PrintOrganizer.py",
+      "verzija": "1.0",
       "kategorija": "PDF / Ispis",
       "ikona": "🖨️",
       "opis": "Razvrstaj PDF stranice: kopirka (A4/A3) vs ploter (A2+)",
@@ -121,6 +134,7 @@
     {
       "ime": "Excel PDF Placer",
       "skripta": "ExcelPdfPlacer.py",
+      "verzija": "1.0",
       "kategorija": "PDF / Ispis",
       "ikona": "📌",
       "opis": "Klikom postavi Excel podatke na točne pozicije u PDF-u",
@@ -130,6 +144,7 @@
     {
       "ime": "HEPA Form Filler",
       "skripta": "hepaFormFiller.py",
+      "verzija": "1.0",
       "kategorija": "PDF / Ispis",
       "ikona": "📋",
       "opis": "Automatsko punjenje HEPA PDF obrazaca iz Excel dokumentacije",
@@ -139,6 +154,7 @@
     {
       "ime": "PDF Form Filler",
       "skripta": "pdfFormFiller.py",
+      "verzija": "1.0",
       "kategorija": "PDF / Ispis",
       "ikona": "🧾",
       "konzola": true,
@@ -149,6 +165,7 @@
     {
       "ime": "PDF Pozicija",
       "skripta": "pdfPosition.py",
+      "verzija": "1.0",
       "kategorija": "PDF / Ispis",
       "ikona": "🎯",
       "konzola": true,
@@ -159,12 +176,22 @@
     {
       "ime": "Excel u PDF",
       "skripta": "ExcelToPdf.py",
+      "verzija": "1.0",
       "kategorija": "PDF / Ispis",
       "ikona": "✒️",
       "konzola": true,
       "opis": "Dodaj tekst na zadanu poziciju u PDF-u",
       "dugi_opis": "Jednostavan alat: odabereš PDF, u konzoli upišeš tekst i X/Y koordinate (u točkama) te broj stranice, i alat spremi novi PDF s dodanim tekstom.",
       "upute": "1. Odaberi ulazni PDF i gdje spremiti izlazni\n2. U konzoli upiši tekst, X i Y koordinatu te broj stranice (0 = prva)\n3. Novi PDF se sprema na odabranu lokaciju"
+    },
+    {
+      "ime": "Batch Layouti",
+      "skripta": "C:/Users/Korisnik/Documents/SOFTWARE/DwgLayoutCreator/batch/batch_gui.py",
+      "kategorija": "AutoCAD / DWG",
+      "ikona": "🗂️",
+      "opis": "Batch generiranje AutoCAD layouta (DwgLayoutCreator)",
+      "dugi_opis": "GUI za batch generiranje AutoCAD layouta. Alat živi u zasebnom DwgLayoutCreator repou (treba lokalni AutoCAD i buildani LayoutCreatorCore.dll), pa ga launcher pokreće iz lokalnog clonea tog repoa. Ako je repo na drugom mjestu, ispravi putanju 'skripta' u tools.json.",
+      "upute": "1. Provjeri da je DwgLayoutCreator repo kloniran na putanju iz tools.json\n2. Pokreni alat i slijedi upute u GUI-ju"
     }
   ]
 }

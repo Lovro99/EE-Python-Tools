@@ -28,6 +28,7 @@ from datetime import datetime
 import openpyxl
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
+from ee_verzija import naslov
 
 # ── Putanja do C# helpera ──────────────────────────────────────────────────────
 # Traži exe na dvije moguće lokacije (uz .py ili u publish/ folderu)
@@ -278,7 +279,7 @@ class _FileListFrame(ctk.CTkScrollableFrame):
 class SyncDwgFastApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Sync DWG Fast")
+        self.title(naslov("Sync DWG Fast"))
         self.geometry("620x700")
         self.resizable(False, False)
         self.configure(fg_color=_BG)

@@ -51,6 +51,7 @@ from tkinter import filedialog, messagebox
 
 import sklopke
 from sklopke import Klasifikator
+from ee_verzija import naslov
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -1095,7 +1096,7 @@ class KabelskiApp(ctk.CTk):
 
     def __init__(self):
         super().__init__()
-        self.title("Kabelski Graf  –  MST Analizator  v3.4")
+        self.title(naslov("Kabelski Graf  –  MST Analizator"))
         self.geometry("1500x880")
         self.minsize(1100, 700)
 
