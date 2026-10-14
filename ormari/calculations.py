@@ -75,6 +75,12 @@ def recalculate_all(project: "Project", cable_db: dict = None) -> None:
 
         board.calc_current_a = calc_current(board.calc_corrected_power_kw, board.phase)
 
+        # Zaštita se bira PRVA: presjek mora pokriti i nju (Ib ≤ In ≤ Iz,
+        # HD 60364-4-43). Bez toga je npr. Ib = 20 A davao 2,5 mm² (Iz 21 A)
+        # uz osigurač 25 A — preporuka koju breaker_check odmah javi kao
+        # 'overrated'.
+        rec_fuse = recommended_fuse_rating(board.calc_current_a)
+
         # Preporučeni presjek: iz baze (ako dostupno) ili tablica B2
         rec_sec = None
         if cable_db:
@@ -84,11 +90,14 @@ def recalculate_all(project: "Project", cable_db: dict = None) -> None:
                 import sys, os
                 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
                 from ormari.cable_db import recommended_section_from_db
+            # baza traži Iz ≥ struja × faktor; struja se diže tako da cilj
+            # bude barem In
+            sf = board.cable_safety_factor if board.cable_safety_factor > 0 else 1.0
             rec_sec = recommended_section_from_db(
-                cable_db, board.cable_type, board.calc_current_a,
-                board.install_method, board.cable_safety_factor,
+                cable_db, board.cable_type, max(board.calc_current_a, rec_fuse / sf),
+                board.install_method, sf,
             )
         if rec_sec is None:
-            rec_sec = recommended_cable_section(board.calc_current_a)
+            rec_sec = recommended_cable_section(max(board.calc_current_a, rec_fuse))
         board.calc_rec_section_mm2 = rec_sec
-        board.calc_rec_fuse_a = recommended_fuse_rating(board.calc_current_a)
+        board.calc_rec_fuse_a = rec_fuse
