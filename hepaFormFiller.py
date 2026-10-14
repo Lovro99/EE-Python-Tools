@@ -16,6 +16,7 @@ from tkinter import filedialog, messagebox, ttk
 from openpyxl import load_workbook
 import fitz
 from PIL import Image, ImageTk
+from ee_verzija import naslov
 
 try:
     from PyPDFForm import PdfWrapper
@@ -451,7 +452,7 @@ def generate_form(pdf_path: str, field_values: dict, output_path: str):
 class HepaApp:
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("HEPA Form Filler")
+        self.root.title(naslov("HEPA Form Filler"))
         self.root.geometry("1280x820")
         self.root.resizable(True, True)
 

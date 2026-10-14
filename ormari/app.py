@@ -35,6 +35,8 @@ else:
     from .cable_panel  import CablePanel
     from .cable_db     import load_db, save_db, get_cable_types
 
+from ee_verzija import naslov
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -158,7 +160,7 @@ class OrmariApp(ctk.CTk):
 
     def __init__(self) -> None:
         super().__init__()
-        self.title("Razvodne ploče – Kalkulator i shema")
+        self.title(naslov("Razvodne ploče – Kalkulator i shema"))
         self.geometry("1580x900")
         self.minsize(1100, 650)
         self.configure(fg_color=C_BG)
@@ -493,7 +495,7 @@ class OrmariApp(ctk.CTk):
     def _update_title(self) -> None:
         fname = os.path.basename(self._current_file) if self._current_file else "bez naslova"
         dirty = " •" if self._dirty else ""
-        self.title(f"Razvodne ploče – {self.project.name} [{fname}]{dirty}")
+        self.title(naslov(f"Razvodne ploče – {self.project.name} [{fname}]{dirty}"))
 
     def on_close(self) -> None:
         if self._dirty and not messagebox.askyesno(

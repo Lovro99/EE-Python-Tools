@@ -24,6 +24,7 @@ import openpyxl
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from lxml import etree
+from ee_verzija import naslov
 
 # ── XML constants ─────────────────────────────────────────────────────────────
 _PROPS_NS = "http://schemas.openxmlformats.org/officeDocument/2006/custom-properties"
@@ -475,7 +476,7 @@ class _FileListFrame(ctk.CTkScrollableFrame):
 class SyncApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Sync Properties")
+        self.title(naslov("Sync Properties"))
         self.geometry("620x820")
         self.resizable(False, False)
         self.configure(fg_color=_BG)

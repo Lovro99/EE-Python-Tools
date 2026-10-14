@@ -7,6 +7,7 @@ import os
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
+from ee_verzija import naslov
 
 try:
     from pypdf import PdfReader
@@ -138,7 +139,7 @@ class PrintOrganizerApp(tk.Tk):
 
     def __init__(self):
         super().__init__()
-        self.title('Print Organizer')
+        self.title(naslov('Print Organizer'))
         self.geometry('880x780')
         self.minsize(720, 520)
         self.configure(bg=BG)
