@@ -65,11 +65,21 @@ def _load_zip(path: str) -> tuple[dict[str, bytes], dict]:
 
 
 def _save_zip(path: str, data: dict[str, bytes], info: dict):
-    with zipfile.ZipFile(path, "w") as zf:
-        for name, content in data.items():
-            zi = info.get(name)
-            compress = zi.compress_type if zi else zipfile.ZIP_DEFLATED
-            zf.writestr(name, content, compress_type=compress)
+    # Pisi u privremenu datoteku uz original pa je atomicno zamijeni:
+    # ZipFile(path, "w") bi odmah skratio original na 0, pa bi prekid usred
+    # upisa (mreza, pun disk) ostavio neupotrebljiv dokument.
+    tmp = f"{path}.{os.getpid()}.tmp"
+    try:
+        with zipfile.ZipFile(tmp, "w") as zf:
+            for name, content in data.items():
+                zi = info.get(name)
+                compress = zi.compress_type if zi else zipfile.ZIP_DEFLATED
+                zf.writestr(name, content, compress_type=compress)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        raise
 
 
 def _ensure_custom_props_wired(data: dict[str, bytes]):
