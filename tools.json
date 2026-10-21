@@ -124,12 +124,12 @@
     {
       "ime": "Print Organizer",
       "skripta": "PrintOrganizer.py",
-      "verzija": "1.0",
+      "verzija": "1.1",
       "kategorija": "PDF / Ispis",
       "ikona": "🖨️",
       "opis": "Razvrstaj PDF stranice: kopirka (A4/A3) vs ploter (A2+)",
       "dugi_opis": "Analizira PDF projekta i razvrstava stranice po formatu papira: A4/A3 za kopirku, A2/A1/A0 i nestandardni formati za ploter. Prikazuje sažetak po skupinama i raspone stranica spremne za kopiranje u print dijalog.",
-      "upute": "1. Odaberi PDF datoteku projekta\n2. Klikni 'Analiziraj'\n3. Očitaj raspone stranica za kopirku i ploter\n4. Gumbom 'Kopiraj' prenesi raspon u clipboard za print dijalog"
+      "upute": "1. Odaberi PDF datoteku projekta (zadnji PDF se pamti; 'Zadana mapa…' postavlja mapu u kojoj se otvara odabir)\n2. Klikni 'Analiziraj' (narančasta traka upozorava kad prikazani rezultati nisu od upisanog PDF-a)\n3. Očitaj raspone stranica za kopirku i ploter\n4. Gumbom 'Kopiraj' prenesi raspon u clipboard za print dijalog"
     },
     {
       "ime": "Excel PDF Placer",
