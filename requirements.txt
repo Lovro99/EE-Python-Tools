@@ -1,0 +1,28 @@
+# Python paketi za sve alate iz launchera (EE Alati).
+# Launcher ih sam doinstalira u .venv kad se ova datoteka promijeni.
+# Novi paket u nekom alatu = dodaj ga ovdje.
+
+# GUI
+customtkinter
+Pillow
+
+# Excel / Word / PDF
+openpyxl
+pandas
+python-docx
+docx-properties
+lxml
+PyMuPDF
+pypdf
+PyPDFForm
+
+# grafovi i proracuni (kabeli, razvodni ormari)
+matplotlib
+networkx
+numpy
+
+# AutoCAD / Word / Excel preko COM-a (samo Windows)
+pywin32; sys_platform == "win32"
+
+# QC sustav (qc_system/)
+PyYAML

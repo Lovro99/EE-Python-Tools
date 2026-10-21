@@ -111,5 +111,5 @@ qc_system/
 - Slobodan tekst u Wordu (rečenice izvan tablica) se ne provjerava —
   to je posao za AI sloj (faza 2).
 - Planirano: watchdog servis (auto-sken pri spremanju datoteke),
-  Streamlit QC stranica u postojećem `web_app.py`, AI ekstrakcija
+  QC alat u EE Alati launcheru, AI ekstrakcija
   slobodnog teksta i vizualna provjera shema.
