@@ -8,6 +8,7 @@ import os
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
+from ee_verzija import naslov
 
 try:
     from pypdf import PdfReader
@@ -35,9 +36,10 @@ STANDARD_SIZES = {
 
 KOPIRKA_FORMATS = {'A4', 'A3'}
 
-# Pamti zadnju datoteku i zadanu mapu između pokretanja
-CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           'printorganizer_config.json')
+# Pamti zadnju datoteku i zadanu mapu između pokretanja – po korisniku, ne pored
+# skripte (kolege pokreću alat sa sharea, a testne grane iz zasebnih kopija)
+CONFIG_PATH = os.path.join(os.environ.get('LOCALAPPDATA') or str(Path.home()),
+                           'EE-Alati', 'printorganizer_config.json')
 
 
 def load_config():
@@ -51,6 +53,7 @@ def load_config():
 
 def save_config(cfg):
     try:
+        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
         with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
             json.dump(cfg, f, ensure_ascii=False, indent=2)
     except OSError:
@@ -160,7 +163,7 @@ class PrintOrganizerApp(tk.Tk):
 
     def __init__(self):
         super().__init__()
-        self.title('Print Organizer')
+        self.title(naslov('Print Organizer'))
         self.geometry('880x780')
         self.minsize(720, 520)
         self.configure(bg=BG)

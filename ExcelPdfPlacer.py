@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 import fitz  # PyMuPDF
 import json
 import os
+from ee_verzija import naslov
 
 PLACEMENTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'klik_pozicije.json')
 LOCATION_SETS = ["Zahtjev 1.2.1", "Zahtjev 1.6.1", "Rezerva"]
@@ -12,7 +13,7 @@ LOCATION_SETS = ["Zahtjev 1.2.1", "Zahtjev 1.6.1", "Rezerva"]
 class PdfCanvasPlacer:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("PDF klik unos podataka")
+        self.root.title(naslov("PDF klik unos podataka"))
 
         self.excel_path = ''
         self.pdf_path = ''

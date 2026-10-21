@@ -24,6 +24,7 @@ from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
+from ee_verzija import naslov
 
 # PVSOL izvozi valutu kao "£" (locale artefakt). Hrvatski projekti -> EUR.
 CURRENCY = "EUR"
@@ -526,7 +527,7 @@ class PvsolApp:
         self.tk, self.ttk = tk, ttk
 
         self.root = root
-        self.root.title("PVSOL -> Excel")
+        self.root.title(naslov("PVSOL -> Excel"))
         self.root.geometry("680x460")
         self.root.minsize(620, 420)
 

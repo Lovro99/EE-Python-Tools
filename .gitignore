@@ -21,5 +21,5 @@ dwg_props_helper/obj/
 # Naucena mapa imena blokova (Kabelski graf) - lokalna, po korisniku/projektu
 sklopke_config.json
 
-# Zapamcena putanja / zadana mapa (Print Organizer) - lokalno, po korisniku
-printorganizer_config.json
+# Testne kopije grana (EE Alati launcher, izbornik "Verzija")
+.grane/

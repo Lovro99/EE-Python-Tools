@@ -7,6 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import math
 import numpy as np
+from ee_verzija import naslov
 
 class DistributionCabinet:
     """Razdelni ormar sa fiksnom pozicijom"""
@@ -240,7 +241,7 @@ class CablePlannerMST:
 class CablePlannerGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("🔌 Kabliranje - Minimalno Razapinjuće Stablo")
+        self.root.title(naslov("🔌 Kabliranje - Minimalno Razapinjuće Stablo"))
         self.root.geometry("1600x900")
         
         # Kreiraj i učitaj podatke
