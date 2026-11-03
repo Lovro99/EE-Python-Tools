@@ -51,10 +51,14 @@ try {
     # ne diraju (npr. sklopke_config.json koji alati uce kod kolega).
     $flags = @("/MIR", "/XD", "__pycache__", ".git", ".grane", ".venv", "bin", "obj", ".vs",
                "/XF", ".git", "*.pyc", "*.pyo", "sklopke_config.json",
-               "/NFL", "/NDL", "/NP")
+               "/NP")
     if ($WhatIf) {
+        # /L = samo popis, nista se ne kopira ni brise; bez /NFL /NDL da se
+        # vidi svaka datoteka ("*EXTRA" = na serveru bi se obrisala)
         $flags += "/L"
         Write-Host "(WhatIf - nema stvarnih promjena)" -ForegroundColor Yellow
+    } else {
+        $flags += @("/NFL", "/NDL")  # pravi deploy: samo sazetak
     }
     robocopy $tmp $dest @flags
     if ($LASTEXITCODE -ge 8) { throw "robocopy nije uspio (kod $LASTEXITCODE)" }

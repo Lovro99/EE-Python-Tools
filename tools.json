@@ -13,7 +13,7 @@
     {
       "ime": "Sync Properties",
       "skripta": "syncProperties.py",
-      "verzija": "1.0",
+      "verzija": "1.1",
       "kategorija": "AutoCAD / DWG",
       "ikona": "🔄",
       "opis": "Excel → Word/DWG sinkronizacija custom propertija",
@@ -23,7 +23,7 @@
     {
       "ime": "Sync DWG Fast",
       "skripta": "syncDwgFast.py",
-      "verzija": "1.0",
+      "verzija": "1.1",
       "kategorija": "AutoCAD / DWG",
       "ikona": "⚡",
       "opis": "Brzi upis Excel podataka u DWG — bez AutoCAD-a",
@@ -33,7 +33,7 @@
     {
       "ime": "Razvodne Ploče",
       "modul": "ormari.app",
-      "verzija": "1.0",
+      "verzija": "1.1",
       "kategorija": "Razvodni ormari i kabeli",
       "ikona": "🗄️",
       "opis": "Kalkulator i shema razvodnih ormara",
